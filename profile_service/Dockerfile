@@ -10,4 +10,4 @@ COPY . .
 EXPOSE 8080
 RUN mkdir /root/.aws/
 COPY credentials /root/.aws/
-CMD ["node", "ddb_ex.js"]
+CMD ["nodemon", "-L", "server.js"]

@@ -4,7 +4,7 @@ var AWS = require('aws-sdk');
 AWS.config.update({ region: 'us-east-2' });
 
 // Create the DynamoDB service object
-var ddb = new AWS.DynamoDB({ apiVersion: '2012-08-10' });
+var ddb = new AWS.DynamoDB().DocumentClient();
 
 var params = {
     TableName: 'profile',
