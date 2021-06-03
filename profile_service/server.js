@@ -4,6 +4,7 @@ const express = require('express');
 
 const profile = require('./profile');
 const channel = require('./channel');
+const message = require('./message');
 
 
 
@@ -50,15 +51,19 @@ app.post("/login", (req, res) => {
 });
 
 
+app.post("/message", (req, res) => {
+  message.send_message(res, req.body);
+  
+});
+
+
 app.get("/all_channels", (req, res) => {
     channel.get_all_channels(res);
 });
 
 app.get("/all_messages", (req, res) => {
   var channel_id = req.body['channel_id'];
-
-  
-  res.send();
+  channel.get_all_messages(res, channel_id);
 });
 
 

@@ -1,6 +1,6 @@
 "use strict";
 
-const { DynamoDBClient, PutItemCommand, GetItemCommand } = require("@aws-sdk/client-dynamodb"); // CommonJS import
+const { DynamoDBClient, PutItemCommand, GetItemCommand, QueryCommand } = require("@aws-sdk/client-dynamodb"); // CommonJS import
 const client = new DynamoDBClient({ region: "us-east-2" });
 
 /**
@@ -12,6 +12,7 @@ const client = new DynamoDBClient({ region: "us-east-2" });
  * @param {string} url image url
  * @return {number} x raised to the n-th power.
  */
+
 
 function makeid(length) {
     var result = [];
@@ -86,6 +87,28 @@ function get_all_channels(res){
 }
 
 function get_all_messages(res, channel_id){
+
+    const params = {
+        FilterExpression: "channel_id = :cid",
+        ExpressionAttributeValues: {
+            ":cid": { S: channel_id }
+        },
+        TableName: "messages",
+    };
+
+    const command = new QueryCommand(params);
+    client.send(command).then(
+        (data) => {
+            console.log(data);
+            // process data.
+
+            res.send(data);
+        },
+        (error) => {
+            console.log(error);
+            // error handling.
+        }
+    );
 
 }
 
