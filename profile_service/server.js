@@ -3,6 +3,7 @@
 const express = require('express');
 
 const profile = require('./profile');
+const channel = require('./channel');
 
 
 
@@ -20,23 +21,20 @@ app.get("/", (req, res) => {
   res.send("Hello!!! World");
 });
 
-// GET
-
-
 // POST
 app.post("/channel", (req, res) => {
   var action = req.body['action'];
-  var channel_id = req.body['channel_id'];
+  var channel_name = req.body['channel_name'];
   var uid = req.body['uid'];
-  res.send({'action': action});
   if (action === "create"){
-
+    channel.create_channel(res, channel_name);
   }
   else if (condition === "enter"){
+    // channel.enter_room(res, channel_name, uid);
 
   }
   else if (condition === "leave"){
-
+    // channel.leave_room(res, channel_name, uid);
   }
   else if (condition === "reload"){
 
@@ -46,39 +44,19 @@ app.post("/channel", (req, res) => {
 app.post("/login", (req, res) => {
     var username = req.body['username'];
     var password = req.body['password'];
-    // Check if username and password matches a existing user
-    // if it matches
-    // Look up if username exists
+
     profile.profile_auth(res, username, password);
 
 });
 
 
 app.get("/all_channels", (req, res) => {
-  res.send();
+    channel.get_all_channels(res);
 });
 
 app.get("/all_messages", (req, res) => {
   var channel_id = req.body['channel_id'];
 
-  var params = {
-    TableName : 'message',
-    FilterExpression: "contains (Subtitle, :topic)",
-    ReturnValues: 'ALL_OLD'
-  };
-
-  const command = new GetItemCommand(params);
-  client.send(command).then(
-    (data) => {
-      console.log(data);
-      // process data.
-    },
-    (error) => {
-      console.log(error);
-      // error handling.
-    }
-  );
-  res.send(req.body);
   
   res.send();
 });
