@@ -1,6 +1,6 @@
 "use strict";
 
-const { DynamoDBClient, PutItemCommand, GetItemCommand, QueryCommand } = require("@aws-sdk/client-dynamodb"); // CommonJS import
+const { DynamoDBClient, PutItemCommand, GetItemCommand, QueryCommand, UpdateItemCommand, DeleteItemCommand } = require("@aws-sdk/client-dynamodb"); // CommonJS import
 const client = new DynamoDBClient({ region: "us-east-2" });
 
 /**
@@ -56,31 +56,98 @@ function create_channel(res, channel_name) {
     );
 }
 
-function enter_channel(res, channel_id){
+
+function enter_channel(res, channel_id, uid){
     var params = {
         TableName: 'channel',
-        Item: {
-            channel_id: { S: channel_id },
-
-        }
+        Key: {
+            "channel_id": {S: channel_id} 
+        },
+        UpdateExpression: "ADD people :people  SET people_count = people_count + :incr",  
+        ExpressionAttributeValues: {
+            ":incr": {N: "1"},
+            ':people': {'SS': [uid] },
+        },   
+        "ReturnValues": "ALL_NEW",
     };
-    const command = new PutItemCommand(params);
+
+    var command = new UpdateItemCommand(params);
     client.send(command).then(
         (data) => {
             console.log(data);
-            // process data.
-
+            // process data
+            var user_count = Object.values(data['Attributes']['people_count'])[0];
+            var users = Object.values(data['Attributes']['people'])[0];
+            
             res.send({
                 "channel_id": channel_id,
-                "channel_name": channel_name
+                "users": users,
+                "user_count": user_count,
             });
         },
         (error) => {
             console.log(error);
+            res.send(error.name);
             // error handling.
         }
     );
 }
+
+
+function leave_channel(res, channel_id, uid){
+    // delete the user from userset
+    var params = {
+        TableName: 'channel',
+        Key: {
+            "channel_id": {S: channel_id} 
+        },
+        UpdateExpression: "DELETE people :people  SET people_count = people_count - :incr",  
+        ExpressionAttributeValues: {
+            ":incr": {N: "1"},
+            ":people": {'SS': [uid] },
+        },   
+        "ReturnValues": "ALL_NEW",
+    };
+
+    var user_count;
+    var command = new UpdateItemCommand(params);
+    client.send(command).then(
+        (data) => {
+            // process data
+            user_count = Object.values(data['Attributes']['people_count'])[0];
+        },
+        (error) => {
+            console.log(error);
+            res.send(error.name);
+            // error handling.
+        }
+    ).then(
+        (data) => {
+            // delete the channel if no one in it
+            if (user_count === '0'){                            
+                var params = {
+                    TableName: 'channel',
+                    Key: {"channel_id": {S: channel_id}},
+                };
+                var command = new DeleteItemCommand(params);
+                client.send(command).then(
+                    (data) => {},
+                    (error) => {
+                        console.log(error);
+                        res.send(error.name);
+                    }
+                );
+            }
+            res.send("Success");
+        },
+        (error) => {
+            console.log(error);
+            res.send(error.name);
+            // error handling.
+        }
+    );
+}
+
 
 function get_all_channels(res){
     
@@ -113,5 +180,7 @@ function get_all_messages(res, channel_id){
 }
 
 exports.create_channel = create_channel;
+exports.enter_channel = enter_channel;
+exports.leave_channel = leave_channel;
 exports.get_all_channels = get_all_channels;
 exports.get_all_messages = get_all_messages;

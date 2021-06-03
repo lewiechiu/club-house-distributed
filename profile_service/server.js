@@ -25,19 +25,20 @@ app.get("/", (req, res) => {
 // POST
 app.post("/channel", (req, res) => {
   var action = req.body['action'];
-  var channel_name = req.body['channel_name'];
   var uid = req.body['uid'];
   if (action === "create"){
+	var channel_name = req.body['channel_name'];
     channel.create_channel(res, channel_name);
   }
-  else if (condition === "enter"){
-    // channel.enter_room(res, channel_name, uid);
-
+  else if (action === "enter"){
+	var channel_id = req.body['channel_id'];
+    channel.enter_channel(res, channel_id, uid);
   }
-  else if (condition === "leave"){
-    // channel.leave_room(res, channel_name, uid);
+  else if (action === "leave"){
+	var channel_id = req.body['channel_id'];
+    channel.leave_channel(res, channel_id, uid);
   }
-  else if (condition === "reload"){
+  else if (action === "reload"){
 
   }
 });
