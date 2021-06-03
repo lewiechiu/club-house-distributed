@@ -1,8 +1,9 @@
 "use strict";
 
-const { DynamoDBClient, PutItemCommand, GetItemCommand } = require("@aws-sdk/client-dynamodb"); // CommonJS import
 const express = require('express');
-const client = new DynamoDBClient({ region: "us-east-2" });
+
+const profile = require('./profile');
+
 
 
 // Constants
@@ -21,37 +22,52 @@ app.get("/", (req, res) => {
 
 // GET
 
-app.get("/profile/:user_id", (req, res) => {
-  /**
-   * get user profile by user_id
-   * user_id is a auto generated random string
-   */
-
-  
-});
 
 // POST
-app.post("/profile/", (req, res) => {
-  // input type and format
-  // https://stackoverflow.com/questions/66591418/aws-nodejs-sdk-v3-dynamodb-updateitem-typeerror-cannot-read-property-0-of-u
-  // https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-dynamodb/index.html
-  // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html#putItem-property
-  // Specifies how to formulate the params object
+app.post("/channel", (req, res) => {
+  var action = req.body['action'];
+  var channel_id = req.body['channel_id'];
+  var uid = req.body['uid'];
+  res.send({'action': action});
+  if (action === "create"){
 
-  var user_info = req.body;
+  }
+  else if (condition === "enter"){
+
+  }
+  else if (condition === "leave"){
+
+  }
+  else if (condition === "reload"){
+
+  }
+});
+
+app.post("/login", (req, res) => {
+    var username = req.body['username'];
+    var password = req.body['password'];
+    // Check if username and password matches a existing user
+    // if it matches
+    // Look up if username exists
+    profile.profile_auth(res, username, password);
+
+});
+
+
+app.get("/all_channels", (req, res) => {
+  res.send();
+});
+
+app.get("/all_messages", (req, res) => {
+  var channel_id = req.body['channel_id'];
+
   var params = {
-    TableName : 'profile',
-    Item: {
-       username: {S: user_info['uuid']},
-       name: {S: user_info['name']},
-       birthday: {S: user_info['birthday']},
-       description: {S: 'blah blah blah'},
-       image: {S: ""}
-    },
+    TableName : 'message',
+    FilterExpression: "contains (Subtitle, :topic)",
     ReturnValues: 'ALL_OLD'
   };
 
-  const command = new PutItemCommand(params);
+  const command = new GetItemCommand(params);
   client.send(command).then(
     (data) => {
       console.log(data);
@@ -64,7 +80,10 @@ app.post("/profile/", (req, res) => {
   );
   res.send(req.body);
   
+  res.send();
 });
+
+
 
 app.listen(PORT, HOST);
 console.log(`Running on http://${HOST}:${PORT}`);
