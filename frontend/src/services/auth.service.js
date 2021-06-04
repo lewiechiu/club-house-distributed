@@ -1,27 +1,22 @@
-import axios from "axios";
+import httpClient from './httpClient';
 
-const API_URL = "https://web-security-midterm.herokuapp.com/api/auth/";
-
-const register = (username, password) => {
-  return axios.post(API_URL + "signup", {
-    username,
-    password,
-  });
-};
+const END_POINT = '/login';
 
 const login = (username, password) => {
-  return axios
-    .post(API_URL + "signin", {
-      username,
-      password,
-    })
-    .then((response) => {
-      if (response.data.accessToken) {
-        localStorage.setItem("user", JSON.stringify(response.data));
-      }
-
-      return response.data;
-    });
+  try {
+    const response = await httpClient.post(END_POINT, { username, password });
+    if (response.data.access_token) {
+      localStorage.setItem('user', JSON.stringify({
+        userName: username,  // TO ADD
+        accessToken: response.data.access_token
+      }));  
+      localStorage.setItem('accessToken', response.data.access_token);
+    }
+    return response.data;
+  } catch (err) {
+    console.log(err);
+    return null;
+  }
 };
 
 const logout = () => {
@@ -33,7 +28,6 @@ const getCurrentUser = () => {
 };
 
 export default {
-  register,
   login,
   logout,
   getCurrentUser,
