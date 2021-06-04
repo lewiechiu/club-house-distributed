@@ -86,9 +86,8 @@ function enter_channel(res, channel_id, uid){
             });
         },
         (error) => {
-            console.log(error);
-            res.send(error.name);
-            // error handling.
+			console.log(error);
+            res.status(500).send( {"message": error} ); 
         }
     );
 }
@@ -109,41 +108,31 @@ function leave_channel(res, channel_id, uid){
         "ReturnValues": "ALL_NEW",
     };
 
-    var user_count;
     var command = new UpdateItemCommand(params);
     client.send(command).then(
         (data) => {
-            // process data
-            user_count = Object.values(data['Attributes']['people_count'])[0];
-        },
-        (error) => {
-            console.log(error);
-            res.send(error.name);
-            // error handling.
-        }
-    ).then(
-        (data) => {
             // delete the channel if no one in it
+            var user_count = Object.values(data['Attributes']['people_count'])[0];
             if (user_count === '0'){                            
                 var params = {
                     TableName: 'channel',
                     Key: {"channel_id": {S: channel_id}},
                 };
+                
                 var command = new DeleteItemCommand(params);
                 client.send(command).then(
                     (data) => {},
                     (error) => {
-                        console.log(error);
-                        res.send(error.name);
+						console.log(error);
+						res.status(500).send( {"message": error} ); 
                     }
                 );
             }
-            res.send("Success");
+            res.send({"message": "Success"});
         },
         (error) => {
-            console.log(error);
-            res.send(error.name);
-            // error handling.
+			console.log(error);
+            res.status(500).send( {"message": error} ); 
         }
     );
 }
