@@ -1,13 +1,13 @@
-FROM node:buster
+FROM node
+
 
 WORKDIR /usr/src/app
-
-COPY package*.json ./
-
-RUN npm install
-COPY . .
-
-EXPOSE 8080
 RUN mkdir /root/.aws/
 COPY credentials /root/.aws/
-CMD ["nodemon", "-L", "server.js"]
+COPY package*.json ./
+COPY . .
+
+RUN npm install --production
+
+EXPOSE 8080
+CMD ["node", "server.js"]
