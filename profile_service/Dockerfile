@@ -1,13 +1,14 @@
-FROM node
+FROM node:alpine
 
-
-WORKDIR /usr/src/app
 RUN mkdir /root/.aws/
 COPY credentials /root/.aws/
-COPY package*.json ./
+
+WORKDIR /usr/src/app
+COPY package.json ./
 COPY . .
 
 RUN npm install --production
 
 EXPOSE 8080
-CMD ["node", "server.js"]
+ENTRYPOINT [ "node" ]
+CMD ["server.js"]
