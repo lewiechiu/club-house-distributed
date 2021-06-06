@@ -1,14 +1,18 @@
+FROM node:alpine AS build_image
+
+
+WORKDIR /usr/src/app
+COPY package*.json ./
+RUN npm install --production
+
+COPY . .
+
 FROM node:alpine
 
+WORKDIR /usr/src/app
+COPY --from=build_image /usr/src/app ./
 RUN mkdir /root/.aws/
 COPY credentials /root/.aws/
 
-WORKDIR /usr/src/app
-COPY package.json ./
-COPY . .
-
-RUN npm install --production
-
 EXPOSE 8080
-ENTRYPOINT [ "node" ]
-CMD ["server.js"]
+CMD ["node", "server.js"]
