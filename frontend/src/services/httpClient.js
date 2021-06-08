@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const httpClient = axios.create({
-  baseURL: '0.0.0.0/8080',
+  baseURL: '1.0.0.0/8080',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -27,26 +27,29 @@ httpClient.interceptors.response.use(
   },
   (err) => {
     if (err && err.response) {
+      var errMsg = ''
       switch (err.response.status) {
         case 400:
-          console.log('Bad Request');
+          errMsg = '400 Bad Request';
           console.log(err.response.data);
           break;
         case 404:
-          console.log('Not Found');
+          errMsg = '404 Not Found';
           break;
         case 500:
-          console.log('Internal Server Error');
+          errMsg = '500 Internal Server Error';
           break;
         case 503:
-          console.log('Service Unavailable');
+          errMsg = '503 Service Unavailable';
           break;
         default:
-          console.log(`連接錯誤${err.response.status}`);
+          errMsg = `連接錯誤${err.response.status}`;
       }
+      console.log(errMsg)
+      return {'errorMsg': errMsg}
     } else {
       console.log(err);
-      console.log('連接到服務器失敗');
+      return {'errorMsg': '連接到服務器失敗'}
     }
     return Promise.resolve(err.response);
   },

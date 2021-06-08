@@ -7,8 +7,8 @@ import Grid from '@material-ui/core/Grid';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
-import AuthService from "../services/auth.service";
-import UserService from "../services/user.service";
+// import AuthService from "../services/auth.service";
+// import UserService from "../services/user.service";
 
 
 
@@ -37,78 +37,16 @@ const useStyles = makeStyles((theme) => ({
 
 function Chat() {
   const classes = useStyles();
-  const currentUser = AuthService.getCurrentUser();
-  const currentUserName = currentUser ? currentUser.username : 'NotFoundName';  
+  // const currentUser = AuthService.getCurrentUser();
+  // const currentUserName = currentUser ? currentUser.username : 'NotFoundName';  
   const [textInput, setTextInput] = useState('')
   const [comments, setComments] = useState(
     /** @type {{_id: string, name: string, msg: string, time: string}[]} */([])
   )
 
-  /** @type {React.ChangeEventHandler<HTMLInputElement>} */
-  const handleTextInputChange = ({ target: { name, value } }) => {
-    // const { name, value } = event.target
-    setTextInput(value)
-  }
-
-  const handleFormSubmit = (event) => {
-    let msgID = '';
-    UserService.addMsg(currentUserName, textInput).then(
-        (response) => {
-            console.log(response);            
-            msgID = response.data._id;
-            const currentTime = new Date();
-            const newRow = {'_id': msgID, 'name':currentUserName, 'msg': textInput, 'time': currentTime.toLocaleString()};
-            setComments(prev => [newRow, ...prev])
-            setTextInput('')
-        },
-        (error) => {
-            setTextInput("Message stored fail!");
-            console.log(error);
-        }
-    );
-
-    event.preventDefault();
-    
-  }
-  
-  const handleDelete = (name, _id, e) => {
-    console.log(_id);
-    UserService.deleteMsg(name, _id).then(
-        (res) => {
-            console.log(res.data.message);
-            setComments(comments.filter(item => item._id !== _id));
-        },
-        (err) => {
-            console.log(err);
-        }
-    )
-  }
-
-  useEffect(() => {
-    UserService.getAllMsg().then(
-        (res) => {
-            let newArr = [];
-            res.data.data.forEach(obj => {
-                newArr.push({
-                    "_id": obj._id,
-                    "name": obj.username,
-                    "msg": obj.msg,
-                    "time": new Date(obj.time).toLocaleString()
-                })
-            });
-            console.log(newArr);
-            setComments(prev => [...prev, ...newArr]);
-        },
-        (err) => {
-            console.log(err);
-        }
-    )
-  }, [])
-
   return (
     <div>
-        {currentUser===null && (<Redirect to="/login"/>)}
-      <form classname={classes.form} onSubmit={handleFormSubmit}>
+      <form classname={classes.form}>
           <TextField
             variant="outlined"
             margin="normal"
@@ -116,7 +54,6 @@ function Chat() {
             name="message"
             label="Message"
             id="message"
-            onChange={handleTextInputChange}
             value={textInput}
           />
           <Button
@@ -130,28 +67,6 @@ function Chat() {
           </Button>
       </form>
       <div>
-            <List className={classes.messageArea}>
-              {comments.map((comment, index) =>
-                  <ListItem key={index}>
-                    <Grid container>
-                        <Grid item xs={6}>
-                            <ListItemText align="left" primary={comment.msg}></ListItemText>
-                        </Grid>
-                        <Grid item xs={2}>
-                            <ListItemText align="left" secondary={comment.name}></ListItemText>
-                        </Grid>
-                        <Grid item xs={2}>
-                            <ListItemText align="left" secondary={comment.time}></ListItemText>
-                        </Grid>
-                        {(comment.name===currentUserName) && 
-                            <Grid item xs={2}>
-                                <Button variant="contained" align="right" color="secondary" onClick={(e) => handleDelete(comment.name, comment._id, e)}> Delete </Button>
-                            </Grid>
-                        }
-                    </Grid>
-                </ListItem>
-              )}
-          </List>
       </div>
     </div>
   );

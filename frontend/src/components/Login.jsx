@@ -69,20 +69,20 @@ export default function SignIn(props) {
 
     if (checkBtn.current.context._errors.length === 0) {
       AuthService.login(username, password).then(
-        () => {
-          props.history.push("/profile");
-          window.location.reload();
+        (res) => {
+          if(res?.data){
+            console.log('Log in success.')
+            props.history.push("/chat");
+            window.location.reload();
+          }else{
+            const errorMsg = res?.errorMsg;
+            console.log(errorMsg)
+            setLoading(false);
+            setMessage(errorMsg);
+          }
         },
         (error) => {
-          const resMessage =
-            (error.response &&
-              error.response.data &&
-              error.response.data.message) ||
-            error.message ||
-            error.toString();
-
-          setLoading(false);
-          setMessage(resMessage);
+          console.log('Unexpected Error', error)
         }
       );
     } else {
