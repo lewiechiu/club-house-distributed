@@ -25,7 +25,7 @@ function makeid(length) {
     return result.join('');
 }
 
-function create_channel(res, channel_name) {
+function create_channel(res, channel_name, uid ) {
     var channel_id = makeid(16);
     var params = {
         TableName: 'channel',
@@ -33,7 +33,7 @@ function create_channel(res, channel_name) {
             channel_id: { S: channel_id },
             channel_name: { S: channel_name },
             people_count: { N: "1" },
-
+            people: {SS: [uid] },
         }
     };
     // console.log(params);
