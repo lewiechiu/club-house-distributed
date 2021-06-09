@@ -116,7 +116,7 @@ export default function SignIn(props) {
           <div className="form-group">
             <label htmlFor="password">Password</label>
             <Input
-              type="password"
+              type="current-password"
               className="form-control"
               name="password"
               value={password}
