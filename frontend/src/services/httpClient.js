@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const httpClient = axios.create({
-  baseURL: '1.0.0.0/8080',
+  baseURL: 'http://0.0.0.0:8080',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -15,7 +15,7 @@ httpClient.interceptors.request.use((config) => {
     newConfig.headers.Authorization = user.accessToken;
   } else {
     // ref: https://stackoverflow.com/questions/46362309/how-to-go-bact-to-login-page-from-axios-interceptor
-    window.location.href = '/login';
+    // window.location.href = '/login';  // this will jump to the login page if any calling api fails
   }
   return newConfig;
 },
