@@ -11,15 +11,20 @@
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.10",
+    "autoprefixer": "^9.8.6",
     "axios": "^0.21.1",
     "bootstrap": "^4.6.0",
+    "prettier": "^2.3.1",
     "react": "^17.0.1",
     "react-bootstrap": "^1.5.2",
+    "react-chat-elements": "^10.15.0",
     "react-dom": "^17.0.1",
+    "react-native-vector-icons": "^8.1.0",
     "react-router-dom": "^5.2.0",
     "react-scripts": "4.0.3",
     "react-transition-group": "^4.4.1",
     "react-validation": "^3.0.7",
+    "tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.1.4",
     "validator": "^13.5.2",
     "web-vitals": "^1.0.1"
   },
@@ -48,9 +53,6 @@
     ]
   },
   "devDependencies": {
-    "@tailwindcss/postcss7-compat": "^2.1.0",
-    "autoprefixer": "^9.8.6",
-    "postcss": "^7.0.35",
-    "tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.1.0"
+    "@tailwindcss/postcss7-compat": "^2.1.0"
   }
 }

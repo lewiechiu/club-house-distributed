@@ -7,19 +7,21 @@ const httpClient = axios.create({
   },
 });
 
-httpClient.interceptors.request.use((config) => {
-  const newConfig = { ...config };
-  
-  const user = JSON.parse(localStorage.getItem('user'));
-  if (user && user.accessToken) {
-    newConfig.headers.Authorization = user.accessToken;
-  } else {
-    // ref: https://stackoverflow.com/questions/46362309/how-to-go-bact-to-login-page-from-axios-interceptor
-    // window.location.href = '/login';  // this will jump to the login page if any calling api fails
-  }
-  return newConfig;
-},
-(error) => Promise.reject(error));
+httpClient.interceptors.request.use(
+  (config) => {
+    const newConfig = { ...config };
+
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (user && user.accessToken) {
+      newConfig.headers.Authorization = user.accessToken;
+    } else {
+      // ref: https://stackoverflow.com/questions/46362309/how-to-go-bact-to-login-page-from-axios-interceptor
+      // window.location.href = '/login';  // this will jump to the login page if any calling api fails
+    }
+    return newConfig;
+  },
+  (error) => Promise.reject(error)
+);
 
 httpClient.interceptors.response.use(
   (response) => {
@@ -27,7 +29,7 @@ httpClient.interceptors.response.use(
   },
   (err) => {
     if (err && err.response) {
-      var errMsg = ''
+      var errMsg = '';
       switch (err.response.status) {
         case 400:
           errMsg = '400 Bad Request';
@@ -45,14 +47,14 @@ httpClient.interceptors.response.use(
         default:
           errMsg = `連接錯誤${err.response.status}`;
       }
-      console.log(errMsg)
-      return {'errorMsg': errMsg}
+      console.log(errMsg);
+      return { errorMsg: errMsg };
     } else {
       console.log(err);
-      return {'errorMsg': '連接到服務器失敗'}
+      return { errorMsg: '連接到服務器失敗' };
     }
     return Promise.resolve(err.response);
-  },
+  }
 );
 
 export default httpClient;

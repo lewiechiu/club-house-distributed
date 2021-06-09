@@ -1,4 +1,4 @@
-import { Link as RouterLink} from 'react-router-dom';
+import { Link as RouterLink } from 'react-router-dom';
 
 import Avatar from '@material-ui/core/Avatar';
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -9,12 +9,12 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
 
-import React, { useState, useRef } from "react";
-import Form from "react-validation/build/form";
-import Input from "react-validation/build/input";
-import CheckButton from "react-validation/build/button";
+import React, { useState, useRef } from 'react';
+import Form from 'react-validation/build/form';
+import Input from 'react-validation/build/input';
+import CheckButton from 'react-validation/build/button';
 
-import AuthService from "../services/auth.service";
+import AuthService from '../services/auth.service';
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -44,10 +44,10 @@ export default function SignIn(props) {
   const form = useRef();
   const checkBtn = useRef();
 
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState('');
 
   const onChangeUsername = (e) => {
     const username = e.target.value;
@@ -62,7 +62,7 @@ export default function SignIn(props) {
   const handleLogin = (e) => {
     e.preventDefault();
 
-    setMessage("");
+    setMessage('');
     setLoading(true);
 
     form.current.validateAll();
@@ -70,19 +70,19 @@ export default function SignIn(props) {
     if (checkBtn.current.context._errors.length === 0) {
       AuthService.login(username, password).then(
         (res) => {
-          if(res?.data){
-            console.log('Log in success.')
-            props.history.push("/chat");
+          if (res?.data) {
+            console.log('Log in success.');
+            props.history.push('/chat');
             window.location.reload();
-          }else{
+          } else {
             const errorMsg = res?.errorMsg;
-            console.log(errorMsg)
+            console.log(errorMsg);
             setLoading(false);
             setMessage(errorMsg);
           }
         },
         (error) => {
-          console.log('Unexpected Error', error)
+          console.log('Unexpected Error', error);
         }
       );
     } else {
@@ -141,7 +141,7 @@ export default function SignIn(props) {
               </div>
             </div>
           )}
-          <CheckButton style={{ display: "none" }} ref={checkBtn} />
+          <CheckButton style={{ display: 'none' }} ref={checkBtn} />
         </Form>
       </div>
     </Container>
