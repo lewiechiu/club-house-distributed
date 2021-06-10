@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Redirect } from 'react-router-dom';
 import { makeStyles } from '@material-ui/core/styles';
-import TextField from '@material-ui/core/TextField';
-import Button from '@material-ui/core/Button';
+import Channel from './Channel';
 // import AuthService from "../services/auth.service";
 // import UserService from "../services/user.service";
 
@@ -34,31 +33,11 @@ function Chat() {
   const [comments, setComments] = useState(
     /** @type {{_id: string, name: string, msg: string, time: string}[]} */ ([])
   );
+  var channelId = 1;
 
   return (
     <div>
-      <form classname={classes.form}>
-        <TextField
-          variant="outlined"
-          margin="normal"
-          required
-          name="message"
-          label="Message"
-          id="message"
-          value={textInput}
-        />
-        <Button
-          type="submit"
-          variant="contained"
-          margin="normal"
-          color="primary"
-          className={classes.submit}
-        >
-          Enter
-        </Button>
-      </form>
-      <div></div>
-      <div>Hi</div>
+      <Channel channelId={channelId}></Channel>
     </div>
   );
 }
