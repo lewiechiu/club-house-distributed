@@ -30,7 +30,7 @@ app.post("/channel", (req, res) => {
   var uid = req.body['uid'];
   if (action === "create"){
 	var channel_name = req.body['channel_name'];
-    channel.create_channel(res, channel_name);
+    channel.create_channel(res, channel_name, uid);
   }
   else if (action === "enter"){
 	var channel_id = req.body['channel_id'];
