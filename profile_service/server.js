@@ -1,6 +1,7 @@
 "use strict";
 
 const express = require('express');
+const cors = require('cors');
 
 const profile = require('./profile');
 const channel = require('./channel');
@@ -17,6 +18,7 @@ const app = express();
 
 // Use json body
 app.use(express.json());
+app.use(cors());
 
 app.get("/", (req, res) => {
   res.send("Hello!!! World");
