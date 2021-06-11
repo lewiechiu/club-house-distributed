@@ -1,6 +1,7 @@
 "use strict";
 
 const express = require('express');
+const cors = require('cors');
 
 const profile = require('./profile');
 const channel = require('./channel');
@@ -17,6 +18,7 @@ const app = express();
 
 // Use json body
 app.use(express.json());
+app.use(cors());
 
 app.get("/", (req, res) => {
   res.send("Hello!!! World");
@@ -28,7 +30,7 @@ app.post("/channel", (req, res) => {
   var uid = req.body['uid'];
   if (action === "create"){
 	var channel_name = req.body['channel_name'];
-    channel.create_channel(res, channel_name);
+    channel.create_channel(res, channel_name, uid);
   }
   else if (action === "enter"){
 	var channel_id = req.body['channel_id'];
