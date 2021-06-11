@@ -1,18 +1,8 @@
 "use strict";
 
 const { DynamoDBClient, PutItemCommand, GetItemCommand, QueryCommand } = require("@aws-sdk/client-dynamodb"); // CommonJS import
+const {makeid} = require('./utils')
 const client = new DynamoDBClient({ region: "us-east-2" });
-
-function makeid(length) {
-    var result = [];
-    var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    var charactersLength = characters.length;
-    for (var i = 0; i < length; i++) {
-        result.push(characters.charAt(Math.floor(Math.random() *
-            charactersLength)));
-    }
-    return result.join('');
-}
 
 function send_message(res, message_param){
 
