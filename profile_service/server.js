@@ -53,22 +53,19 @@ app.post("/login", (req, res) => {
 
 });
 
-
-app.post("/message", (req, res) => {
-  message.send_message(res, req.body);
-  
+app.get("/all_channels", (req, res) => {
+  var limit = req.body['limit'];
+  channel.get_all_channels(res, limit);
 });
 
-
-app.get("/all_channels", (req, res) => {
-    channel.get_all_channels(res);
+// messages
+app.post("/message", (req, res) => {
+  message.send_message(res, req.body);
 });
 
 app.get("/all_messages", (req, res) => {
-  var channel_id = req.body['channel_id'];
-  channel.get_all_messages(res, channel_id);
+  channel.get_all_messages(res, req.body);
 });
-
 
 
 app.listen(PORT, HOST);
