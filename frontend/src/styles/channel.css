@@ -16,8 +16,8 @@ button {
 }
 
 .chat-list {
-  min-width: 240px;
-  max-width: 380px;
+  min-width: 80px;
+  max-width: 120px;
   overflow: auto;
 }
 
@@ -29,7 +29,7 @@ button {
 
 .message-list {
   flex: 1;
-  min-width: 140px;
+  min-width: 340px;
   overflow: auto;
 }
 
