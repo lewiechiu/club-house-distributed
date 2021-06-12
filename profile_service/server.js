@@ -52,7 +52,11 @@ io.on('connection', (socket) => {
       channel.leave_channel(socket, channel_id, uid);
     }
     else if (action === "get_all"){
-      
+      var limit = params['limit'];
+      channel.get_all_channels(socket, limit);
+    }
+    else if (action === "get_all_message"){
+      channel.get_all_messages(res, req.body);
     }
   });
 
@@ -83,3 +87,7 @@ http.listen(PORT, () => {
   console.log('listening on' + PORT);
 });
 // app.listen(PORT, HOST);
+// messages
+
+app.listen(PORT, HOST);
+console.log(`Running on http://${HOST}:${PORT}`);
