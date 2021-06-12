@@ -4,6 +4,8 @@ import Login from './components/Login';
 import Chat from './components/Chat';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import AuthService from './services/auth.service';
+import blueGrey from '@material-ui/core/colors/blueGrey';
+
 
 function App() {
   const [currentUser, setCurrentUser] = useState(undefined);
@@ -18,7 +20,7 @@ function App() {
 
   return (
     <Router>
-      <div className="container mt-3">
+      <div className="container mt-3" backgroundColor={blueGrey[900]}>
         <Switch>
           <Route exact path={['/', '/login']} component={Login} />
           <Route exact path={['/Chat']} component={Chat} />

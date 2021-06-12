@@ -9,10 +9,12 @@ import Typography from '@material-ui/core/Typography';
 import Avatar from '@material-ui/core/Avatar';
 import AvatarGroup from '@material-ui/lab/AvatarGroup';
 import Identicon from 'react-identicons';
+import blueGrey from '@material-ui/core/colors/blueGrey'
 
 const useStyles = makeStyles((theme) => ({
     root: {
         display: 'flex',
+        backgroundColor: blueGrey[50]
     },
     details: {
         display: 'flex',
@@ -26,8 +28,8 @@ const useStyles = makeStyles((theme) => ({
         backgroundColor: "#fff"
     },
     joinBtn: {
-        marginTop: theme.spacing(3),
-        marginBottom: theme.spacing(3),
+        marginTop: theme.spacing(2),
+        marginBottom: theme.spacing(2),
         marginLeft: theme.spacing(2),
         justify: "flex-end"
     }
@@ -41,7 +43,7 @@ export default function ChannelList(props){
         <CardActionArea component="button">
             <Card className={classes.root}>
                 <Grid className={classes.details} xs={8}>
-                    <Typography component="h6" variant="h6" className={classes.content}>
+                    <Typography variant="subtitle1" className={classes.content}>
                         {data.channel_name}({data.people_count})
                     </Typography>
                     <AvatarGroup max={5} >

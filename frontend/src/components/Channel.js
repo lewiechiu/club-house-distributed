@@ -1,6 +1,15 @@
 import React, { useState, useEffect } from 'react';
+import Box from "@material-ui/core/Box";
 import 'react-chat-elements/dist/main.css';
 import '../styles/channel.css';
+import { makeStyles } from '@material-ui/core/styles';
+import Grid from '@material-ui/core/Grid';
+import Typography from '@material-ui/core/Typography';
+import indigo from '@material-ui/core/colors/indigo';
+import blueGrey from '@material-ui/core/colors/blueGrey'
+
+
+
 
 import {
   Button,
@@ -11,7 +20,22 @@ import {
 import MsgService from '../services/msg.service';
 import AuthService from '../services/auth.service';
 
+const useStyles = makeStyles((theme) => ({
+    bgGrey: {
+      backgroundColor: indigo[600]
+    },
+    purple: {
+      backgroundColor: indigo[600],
+      color: "#fff"
+    },
+    blueGrey: {
+      backgroundColor: blueGrey[50]
+    }
+}));
+
+
 function Channel(props) {
+  const classes = useStyles();
   var { channel_id } = props || '2';
   var [messageList, setMessageList] = useState([]);
   var [inputRef, setInputRef] = useState(React.createRef());
@@ -70,6 +94,15 @@ function Channel(props) {
       {
         message_id: '',
         type: 'text',
+        text: 'lalallalala',
+        image_url: '',
+        sender_id: 'b05303124',
+        sender_avatar: 'https://randomuser.me/api/portraits/men/50.jpg',
+        datetime: new Date(),
+      },
+      {
+        message_id: '',
+        type: 'text',
         text: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit',
         image_url: '',
         sender_id: 'b05502058',
@@ -88,44 +121,6 @@ function Channel(props) {
       },
     ];
     const data = preprocess(get_data);
-    // let data = [
-    //   {
-    //     title: 'john',
-    //     position: 'right',
-    //     type: 'text',
-    //     text: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit',
-    //     date: new Date(),
-    //     avatar: 'https://randomuser.me/api/portraits/men/60.jpg',
-    //     dateString: new Date().toLocaleString().split(',')[1],
-    //   },
-    //   {
-    //     title: 'john',
-    //     position: 'left',
-    //     type: 'text',
-    //     text: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit',
-    //     date: new Date(),
-    //     avatar: 'https://randomuser.me/api/portraits/men/67.jpg',
-    //     dateString: new Date().toLocaleString().split(',')[1],
-    //   },
-    //   {
-    //     title: 'john',
-    //     position: 'right',
-    //     type: 'text',
-    //     text: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit',
-    //     date: new Date(),
-    //     avatar: 'https://randomuser.me/api/portraits/women/67.jpg',
-    //     dateString: new Date().toLocaleString().split(',')[1],
-    //   },
-    //   {
-    //     title: 'john',
-    //     position: 'right',
-    //     type: 'text',
-    //     text: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit',
-    //     date: new Date(),
-    //     avatar: 'https://randomuser.me/api/portraits/women/67.jpg',
-    //     dateString: new Date().toLocaleString().split(',')[1],
-    //   },
-    // ];
     setMessageList(data);
   };
 
@@ -142,29 +137,38 @@ function Channel(props) {
   });
 
   return (
-      <div className="right-panel">
-        <MessageList
-          className="message-list"
-          lockable={true}
-          downButtonBadge={10}
-          dataSource={messageList}
-        />
-        <Input
-          ref={(el) => setInputRef(el)}
-          placeholder="Type here..."
-          multiline={true}
-          autofocus={true}
-          onKeyPress={onChange}
-          rightButtons={
-            <Button
-              color="white"
-              backgroundColor="black"
-              text="Send"
-              onClick={addMessage}
-            />
-          }
-        />
-      </div>
+      <Grid item xs={10} md={8} className={classes.blueGrey}>
+        <Box height="95vh" display="flex" flexDirection="column">
+          <Box className={classes.purple}>
+            <Typography inline variant="h5" align="left" width="50%">Channel Title(Online: 5)</Typography>
+          </Box>
+          <Box flex={1} overflow="auto">
+              <MessageList
+                lockable={true}
+                toBottomHeight={'100%'}
+                dataSource={messageList}
+              />
+            </Box>
+            <Box>
+              <Input
+                className={classes.bgGrey}
+                ref={(el) => setInputRef(el)}
+                placeholder="Type here..."
+                multiline={true}
+                autofocus={true}
+                onKeyPress={onChange}
+                rightButtons={
+                  <Button
+                    color="white"
+                    backgroundColor="black"
+                    text="Send"
+                    onClick={addMessage}
+                  />
+                }
+              />
+            </Box>
+        </Box>
+      </Grid>
   );
 }
 export default Channel;
