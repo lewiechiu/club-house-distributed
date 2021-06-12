@@ -8,6 +8,7 @@ const redisAdapter = require('socket.io-redis');
 const profile = require('./profile');
 const channel = require('./channel');
 const message = require('./message');
+const { error } = require('console');
 
 
 // Constants
@@ -38,38 +39,57 @@ io.on('connection', (socket) => {
 
   socket.on('channel', (params) => {
     var action = params['action'];
-    var uid = params['uid'];
-    if (action === "create") {
-      var channel_name = params['channel_name'];
-      channel.create_channel(socket, channel_name, uid);
-    }
-    else if (action === "enter") {
-      var channel_id = params['channel_id'];
-      channel.enter_channel(socket, channel_id, uid);
-    }
-    else if (action === "leave") {
-      var channel_id = params['channel_id'];
-      channel.leave_channel(socket, channel_id, uid);
-    }
-    else if (action === "get_all"){
-      var limit = params['limit'];
-      channel.get_all_channels(socket, limit);
-    }
-    else if (action === "get_all_message"){
-      channel.get_all_messages(res, req.body);
-    }
+    var token = params['token'];
+    var username = params['username'];
+    var avatar_url = params['avatar_url']
+    var channel_id = params['channel_id'];
+    var channel_name = params['channel_name'];
+
+    profile.token_auth(username, token)
+      .then(() => {
+        
+        if (action === "create") {
+          channel.create_channel(socket, channel_name, username, avatar_url);
+        }
+        else if (action === "enter") {
+          channel.enter_channel(socket, channel_id, username, avatar_url);
+        }
+        else if (action === "leave") {
+          channel.leave_channel(socket, channel_id, username);
+        }
+        else if (action === "get_all") {
+          var limit = params['limit'];
+          channel.get_all_channels(socket, limit);
+        }
+        else if (action === "get_all_message") {
+          channel.get_all_messages(res, req.body);
+        }
+      })
+      .catch((error) => {
+        socket.emit('channel_response', { 'message': 'token invalid' });
+      });
+    
   });
 
   socket.on('message', (params) => {
     var action = params['action'];
-    var uid = params['uid'];
+    var token = params['token'];
+    var username = params['username'];
     var channel_id = params['channel_id'];
-    if (action === 'send'){
-      message.send_message()
-    }
-    else if (action === 'get_all'){
+    profile.token_auth(username, token)
+      .then((data) => {
+        if (action === 'send'){
+          message.send_message();
+        }
+        else if (action === 'get_all'){
+          message.get_all_message();
+        }
+      })
+      .catch((error) => {
+        socket.emit('message_response', {'message': 'token invalid'})
+      });
 
-    }
+
 
   });
   socket.on('disconnect', () => {
@@ -84,10 +104,8 @@ app.get("/", (req, res) => {
 
 
 http.listen(PORT, () => {
-  console.log('listening on' + PORT);
+  console.log('listening on ' + PORT);
 });
 // app.listen(PORT, HOST);
 // messages
 
-app.listen(PORT, HOST);
-console.log(`Running on http://${HOST}:${PORT}`);

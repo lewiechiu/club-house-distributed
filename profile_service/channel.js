@@ -13,23 +13,37 @@ const { makeid } = require('./utils');
  * @return {number} x raised to the n-th power.
  */
 
-function create_channel(socket, channel_name, uid) {
+function create_channel(socket, channel_name, username, avatar_url) {
     var channel_id = makeid(16);
+    var people_obj = {};
+    people_obj[username] = {
+        M: {
+            "avatar_url": {
+                "S": user['avatar_url']
+            },
+            "uid": {
+                "S": username
+            }
+        }
+    };
     var params = {
         TableName: 'channel',
         Item: {
             channel_id: { S: channel_id },
             channel_name: { S: channel_name },
             people_count: { N: "1" },
-            people: { SS: [uid] },
+            people: {
+                M: people_obj
+            },
         }
     };
-    // console.log(params);
+    console.log(params);
 
     const command = new PutItemCommand(params);
     client.send(command).then(
         (data) => {
             // process data.
+            console.log(data);
             var response_map = {
                 "message": "Success",
                 "channel_id": channel_id,
@@ -37,22 +51,31 @@ function create_channel(socket, channel_name, uid) {
             socket.emit('channel_response', response_map);
         },
         (error) => {
+            console.log(error);
             socket.emit('channel_response', { "message": error })
         }
     );
 }
 
 
-function enter_channel(socket, channel_id, uid) {
+function enter_channel(socket, channel_id, username, avatar_url) {
     var params = {
         TableName: 'channel',
         Key: {
             "channel_id": { S: channel_id }
         },
-        UpdateExpression: "ADD people :people  SET people_count = people_count + :incr",
+        UpdateExpression: "SET people.#user_name = :people, people_count = people_count + :incr",
         ExpressionAttributeValues: {
             ":incr": { N: "1" },
-            ':people': { SS: [uid] },
+            ':people': {
+                M: {
+                    username: { S: username },
+                    avatar_url: { S: avatar_url }
+                }
+            },
+        },
+        ExpressionAttributeNames: {
+            "#user_name": username
         },
         "ReturnValues": "ALL_NEW",
     };
@@ -60,42 +83,14 @@ function enter_channel(socket, channel_id, uid) {
     var command = new UpdateItemCommand(params);
     client.send(command).then(
         (data) => {
-            // process data
-            var user_count = parseInt(data.Attributes.people_count.S);
-            var users = data.Attributes.people.SS;
             
-            // get users' avatar_urls
-            var users_keys = [];
-            users.forEach(function(element, index, array) {
-                users_keys.push( {"\"username\"": { S: element}});   
-            });
-            var params = {
-                RequestItems: {
-                    "profile": {
-                        Keys: users_keys,
-                  },
-                },  
-            };        
-            var command = new BatchGetItemCommand(params);
-            client.send(command).then(
-                (data) => {                   
-                    var res_users = [];
-                    data.Responses.profile.forEach(function(element, index, array) {
-                        console.log(element);     
-                        res_users.push( {"username": element["\"username\""].S , "avatar_url": element['avatar_url'].S });
-                    });
-
-                    var response_map = {
-                        "channel_id": channel_id,
-                        "users": res_users,
-                        "user_count": user_count,
-                    };
-                    socket.emit('channel_response', response_map);
-                },
-                (error) => {
-                    socket.emit('channel_response', { "message": error });
-                }
-            ); 
+            var user_count = parseInt(data.Attributes.people_count.N);
+            
+            var response_map = {
+                "user_count": user_count,
+                "message": "Success"
+            }
+            socket.emit('channel_response', response_map);
         },
         (error) => {
             socket.emit('channel_response', { "message": error });
@@ -114,17 +109,19 @@ function delete_channel(channel_id) {
     );
 }
 
-function leave_channel(socket, channel_id, uid) {
+function leave_channel(socket, channel_id, username) {
     // delete the user from userset
     var params = {
         TableName: 'channel',
         Key: {
             "channel_id": { S: channel_id }
         },
-        UpdateExpression: "DELETE people :people  SET people_count = people_count - :incr",
+        UpdateExpression: "REMOVE people.#user_name  SET people_count = people_count - :incr",
         ExpressionAttributeValues: {
-            ":incr": { N: "1" },
-            ":people": { 'SS': [uid] },
+            ":incr": { N: "1" }
+        },
+        ExpressionAttributeNames: {
+            "#user_name": username
         },
         "ReturnValues": "ALL_NEW",
     };
@@ -139,6 +136,7 @@ function leave_channel(socket, channel_id, uid) {
             socket.emit('channel_response', { "message": "Success" });
         },
         (error) => {
+            console.log(error);
             socket.emit('channel_response', { "message": error });
         }
     );
@@ -148,6 +146,8 @@ function leave_channel(socket, channel_id, uid) {
 function get_all_channels(res, limit){
     var params = {
         TableName: 'channel'
+        // TODO
+        // Add a limit
     }
     var command = new ScanCommand(params);
     client.send(command).then(
