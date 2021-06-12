@@ -2,11 +2,12 @@
 
 const express = require('express');
 const cors = require('cors');
+const compression = require('compression');
+const redisAdapter = require('socket.io-redis');
 
 const profile = require('./profile');
 const channel = require('./channel');
 const message = require('./message');
-
 
 
 // Constants
@@ -15,61 +16,70 @@ const HOST = "0.0.0.0";
 
 // App
 const app = express();
+app.use(compression());
+const http = require('http').createServer(app);
+const io = require("socket.io")(http);
+io.adapter(redisAdapter({host: 'localhost', port: 6379}));
 
-// Use json body
-app.use(express.json());
-app.use(cors());
+
+io.on('connection', (socket) => {
+  console.log('a user connected');
+  socket.on('POST channel',(params) => {
+    console.log(params);
+  });
+
+  socket.on('login',(params) => {
+    
+    var username = params['username'];
+    var password = params['password'];
+    socket.emit('login response', params);
+    profile.profile_auth(socket, username, password);
+  });
+
+  socket.on('channel', (params) => {
+    var action = params['action'];
+    var uid = params['uid'];
+    if (action === "create") {
+      var channel_name = params['channel_name'];
+      channel.create_channel(socket, channel_name, uid);
+    }
+    else if (action === "enter") {
+      var channel_id = params['channel_id'];
+      channel.enter_channel(socket, channel_id, uid);
+    }
+    else if (action === "leave") {
+      var channel_id = params['channel_id'];
+      channel.leave_channel(socket, channel_id, uid);
+    }
+    else if (action === "get_all"){
+      
+    }
+  });
+
+  socket.on('message', (params) => {
+    var action = params['action'];
+    var uid = params['uid'];
+    var channel_id = params['channel_id'];
+    if (action === 'send'){
+      message.send_message()
+    }
+    else if (action === 'get_all'){
+
+    }
+
+  });
+  socket.on('disconnect', () => {
+    console.log('user disconnected');
+  });
+
+});
 
 app.get("/", (req, res) => {
-  res.send("Hello!!! World");
-});
-
-// POST
-app.post("/channel", (req, res) => {
-  var action = req.body['action'];
-  var uid = req.body['uid'];
-  if (action === "create"){
-	var channel_name = req.body['channel_name'];
-    channel.create_channel(res, channel_name, uid);
-  }
-  else if (action === "enter"){
-	var channel_id = req.body['channel_id'];
-    channel.enter_channel(res, channel_id, uid);
-  }
-  else if (action === "leave"){
-	var channel_id = req.body['channel_id'];
-    channel.leave_channel(res, channel_id, uid);
-  }
-  else if (action === "reload"){
-
-  }
-});
-
-app.post("/login", (req, res) => {
-    var username = req.body['username'];
-    var password = req.body['password'];
-
-    profile.profile_auth(res, username, password);
-
+  res.sendFile('/home/louiechiu/club-house-distributed/profile_service/index.html');
 });
 
 
-app.post("/message", (req, res) => {
-  message.send_message(res, req.body);
-  
+http.listen(PORT, () => {
+  console.log('listening on' + PORT);
 });
-
-
-app.get("/all_channels", (req, res) => {
-    channel.get_all_channels(res);
-});
-
-app.get("/all_messages", (req, res) => {
-  var channel_id = req.body['channel_id'];
-  channel.get_all_messages(res, channel_id);
-});
-
-
-
-app.listen(PORT, HOST);
-console.log(`Running on http://${HOST}:${PORT}`);
+// app.listen(PORT, HOST);
