@@ -3,9 +3,7 @@ import 'react-chat-elements/dist/main.css';
 import '../styles/channel.css';
 
 import {
-  MessageBox,
   Button,
-  ChatItem,
   MessageList,
   Input,
 } from 'react-chat-elements';
@@ -101,7 +99,6 @@ function Channel(props) {
   });
 
   return (
-    <div className="container">
       <div className="right-panel">
         <MessageList
           className="message-list"
@@ -125,7 +122,6 @@ function Channel(props) {
           }
         />
       </div>
-    </div>
   );
 }
 export default Channel;
