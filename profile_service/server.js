@@ -88,16 +88,16 @@ io.on('connection', (socket) => {
     profile.token_auth(username, token)
       .then((data) => {
         if (action === 'send'){
-          message.send_message();
+          return message.send_message();
         }
         else if (action === 'get_all'){
-          message.get_all_message();
+          return message.get_all_message();
         }
       })
-      .then(() => {
+      .then((message) => {
         var response_map = {
           action: action,
-          data: { channel_id: channel_id, username: username }
+          data: message
         };
         socket.broadcast.emit('receive_message', response_map)
       })

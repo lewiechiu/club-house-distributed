@@ -29,10 +29,21 @@ function send_message(res, message_param){
         }
     };
 
+    var message_object = {
+        message_id: message_id,
+        username: sender_id,
+        type: type,
+        text: text,
+        image_url: image_url,
+        sender_avatar: sender_avatar,
+        datetime: datetime
+    };
+
     const command = new PutItemCommand(params);
-    client.send(command).then(
+    return client.send(command).then(
         (data) => {
             res.send({"message": "Success"});
+            return message_object;
         },
         (error) => {
 			res.status(500).send( {"message": error} ); 
