@@ -31,11 +31,12 @@ function send_message(socket, message_param){
 
     var message_object = {
         message_id: message_id,
-        username: sender_id,
+        username: username,
         type: type,
         text: text,
         image_url: image_url,
         sender_avatar: sender_avatar,
+        channel_id: channel_id,
         datetime: datetime
     };
 
@@ -46,6 +47,7 @@ function send_message(socket, message_param){
                 "action": "send",
                 "message": "Success",
             });
+            return message_object
         },
         (error) => {
 			socket.emit('message_response', {
