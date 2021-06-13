@@ -6,12 +6,10 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemAvatar from '@material-ui/core/ListItemAvatar';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import Grid from '@material-ui/core/Grid';
 import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline';
 import IconButton from '@material-ui/core/IconButton';
 import Avatar from '@material-ui/core/Avatar';
 import Identicon from 'react-identicons';
-import indigo from '@material-ui/core/colors/indigo'
 import blueGrey from '@material-ui/core/colors/blueGrey'
 
 // Fake data
@@ -59,69 +57,81 @@ const useStyles = makeStyles((theme) => ({
     white: {
         backgroundColor: "#fff"
     },
-    purple: {
+    selfHeader: {
         backgroundColor: blueGrey[400],
         color: "#fff"
     },
-    blueGrey: {
-        backgroundColor: blueGrey[600]
-    }
 }));
 
-export default function ChannelList() {
+export default function ChannelList(props) {
     const classes = useStyles();
-    const [curChannelId, setCurChannelId] = useState("");
     const [channelList, setChannelList] = useState(channelListData);
+    let {curChannelId, setCurChannelId, curChannelName, setCurChannelName, curChannelCnt, setCurChannelCnt} = props;
 
-    // click "join room"
-    const handleJoin = (channel_id) => {
+    // click "join channel"
+    const handleJoin = (cid) => {
+        console.log(`Join channel ${cid}!`);
+        setCurChannelId(cid);
+        const curChannelData = channelList.find(cdata => cdata.channel_id === cid);
+        console.log("cur: ", curChannelData)
+        // setCurChannelName(curChannelData.curChannelName);
+        // setCurChannelCnt(curChannelData.curChannelCnt);
         if (curChannelId == ""){
-            //S: Enter room
-            setCurChannelId(channel_id);
+            //S: Enter channel
         }else{
-            //S: Leave room and enter another room
-            setCurChannelId(channel_id);
+            //S: Leave channel and enter another channel
         }
     }
 
-    //click "create room"
+    //click "create channel"
     const handleCreate = () => {
+        console.log("Create channel!")
         if (curChannelId == ""){
-            //S: Create room and get cid
+            //S: Create channel and get cid
             // setCurChannelId(cid);
         }else{
-            //S: Leave room, create one room and get cid
+            //S: Leave channel, create one channel and get cid
             // setCurChannelId(cid);
         }
     }
 
-    //update channel list??? get channel list in first render???
+    //Get channel list in first render
     useEffect(() => {
-        //S: Receive channel
-    });
+        console.log('Get channel list in first render!')
+        //S: Get all channel
+        // setChannelList(data)
+    }, []);
+
+    //Update channel list at all time
+    useEffect(() => {
+        console.log('Update channel list at all time...')
+        //S: Receive updated channel and resort channel list
+        // let newChannel = {};
+        // let newList = [...channelList, newChannel];
+        // let newSortList = newList.sort((a, b) => (a.user_count > b.user_count ? 1 : -1));
+        // setChannelList(newSortList.slice(0, -1));
+    })
 
     return(
-        <Grid item xs={2} md={4} className={classes.blueGrey}>
-            <List className={classes.list}>
-                <ListItem alignItems="center" className={classes.purple}>
-                    <ListItemAvatar>
-                        <Avatar className={classes.white} alt={currentUser.username}> 
-                            <Identicon string={currentUser.username} size="25"/>
-                        </Avatar>
-                    </ListItemAvatar>
-                    <ListItemText
-                        primary={currentUser.username}
-                    />
-                    <ListItemSecondaryAction>
-                        <IconButton edge="end" aria-label="delete">
-                            <AddCircleOutlineIcon color="primary" fontSize="large"/>
-                        </IconButton>
-                    </ListItemSecondaryAction>
-                </ListItem>
-                {channelListData.map((channelData) => (
-                    <ChannelItem key={channelData.channel_id} data={channelData} />
-                ))}
-            </List>
-        </Grid>   
+        <List className={classes.list}>
+            <ListItem key={'selfheader'} alignItems="center" className={classes.selfHeader}>
+                <ListItemAvatar>
+                    <Avatar className={classes.white} alt={currentUser.username}> 
+                        <Identicon string={currentUser.username} size="25"/>
+                    </Avatar>
+                </ListItemAvatar>
+                <ListItemText
+                    primary={currentUser.username}
+                />
+                <ListItemSecondaryAction onClick={handleCreate}>
+                    <IconButton edge="end" aria-label="delete">
+                        <AddCircleOutlineIcon color="primary" fontSize="large"/>
+                    </IconButton>
+                </ListItemSecondaryAction>
+            </ListItem>
+            {channelListData.map((channelData) => (
+                <ChannelItem key={channelData.channel_id} data={channelData} onJoin={handleJoin}/>
+            ))}
+        </List>
     )
 }

@@ -20,7 +20,7 @@ function App() {
 
   return (
     <Router>
-      <div className="container mt-3" backgroundColor={blueGrey[900]}>
+      <div className="container mt-3" backgroundcolor={blueGrey[900]}>
         <Switch>
           <Route exact path={['/', '/login']} component={Login} />
           <Route exact path={['/Chat']} component={Chat} />

@@ -37,32 +37,34 @@ const useStyles = makeStyles((theme) => ({
 
 export default function ChannelList(props){
     const classes = useStyles();
-    const { data } = props;
+    const { data, onJoin } = props;
 
     return(
         <CardActionArea component="button">
             <Card className={classes.root}>
-                <Grid className={classes.details} xs={8}>
-                    <Typography variant="subtitle1" className={classes.content}>
-                        {data.channel_name}({data.people_count})
-                    </Typography>
-                    <AvatarGroup max={5} >
-                        {data.users.map((user) => (user.avatar_url == "") ?
-                        <Avatar className={classes.white} alt={user.username}> 
-                            <Identicon string={user.username} size="25"/>
-                        </Avatar> :
-                        <Avatar alt={user.username} src={user.avatar_url}/>)}
-                    </AvatarGroup>
-                </Grid>
-                <Grid className={classes.details} xs={4}>
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        className={classes.joinBtn}
-                        endIcon={<QuestionAnswerIcon/>}
-                    >
-                        JOIN
-                    </Button>
+                <Grid container>
+                    <Grid item className={classes.details} xs={8}>
+                        <Typography variant="subtitle1" className={classes.content}>
+                            {data.channel_name}({data.people_count})
+                        </Typography>
+                        <AvatarGroup max={5} >
+                            {data.users.map((user) => (user.avatar_url == "") ?
+                            <Avatar className={classes.white} alt={user.username}> 
+                                <Identicon string={user.username} size="25"/>
+                            </Avatar> :
+                            <Avatar alt={user.username} src={user.avatar_url}/>)}
+                        </AvatarGroup>
+                    </Grid>
+                    <Grid item className={classes.details} xs={4} onClick={() => onJoin(data.channel_id)}>
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            className={classes.joinBtn}
+                            endIcon={<QuestionAnswerIcon/>}
+                        >
+                            JOIN
+                        </Button>
+                    </Grid>
                 </Grid>
             </Card>
         </CardActionArea>

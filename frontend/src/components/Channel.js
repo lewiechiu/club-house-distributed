@@ -3,12 +3,8 @@ import Box from "@material-ui/core/Box";
 import 'react-chat-elements/dist/main.css';
 import '../styles/channel.css';
 import { makeStyles } from '@material-ui/core/styles';
-import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import indigo from '@material-ui/core/colors/indigo';
-import blueGrey from '@material-ui/core/colors/blueGrey'
-
-
 
 
 import {
@@ -27,16 +23,13 @@ const useStyles = makeStyles((theme) => ({
     purple: {
       backgroundColor: indigo[600],
       color: "#fff"
-    },
-    blueGrey: {
-      backgroundColor: blueGrey[50]
     }
 }));
 
 
 function Channel(props) {
   const classes = useStyles();
-  var { channel_id } = props || '2';
+  var { channelId, channelName, channelCnt } = props;
   var [messageList, setMessageList] = useState([]);
   var [inputRef, setInputRef] = useState(React.createRef());
   // const currentUser = AuthService.getCurrentUser();
@@ -60,7 +53,7 @@ function Channel(props) {
     ]);
 
     await MsgService.sendMsg(
-      channel_id,
+      channelId,
       'text',
       inputRef.input.value,
       '',
@@ -89,7 +82,7 @@ function Channel(props) {
   };
 
   const getMessageList = async () => {
-    // let data = await MsgService.getAllMsgs(channel_id);
+    // let data = await MsgService.getAllMsgs(channelId);
     let get_data = [
       {
         message_id: '',
@@ -125,7 +118,8 @@ function Channel(props) {
   };
 
   const onChange = async (e) => {
-    console.log(inputRef);
+    console.log(channelId);
+    // console.log(inputRef);
     if (!e.shiftKey && e.charCode === 13 && e.target.value !== '') {
       addMessage();
       e.preventDefault();
@@ -137,38 +131,36 @@ function Channel(props) {
   });
 
   return (
-      <Grid item xs={10} md={8} className={classes.blueGrey}>
-        <Box height="95vh" display="flex" flexDirection="column">
-          <Box className={classes.purple}>
-            <Typography inline variant="h5" align="left" width="50%">Channel Title(Online: 5)</Typography>
-          </Box>
-          <Box flex={1} overflow="auto">
-              <MessageList
-                lockable={true}
-                toBottomHeight={'100%'}
-                dataSource={messageList}
-              />
-            </Box>
-            <Box>
-              <Input
-                className={classes.bgGrey}
-                ref={(el) => setInputRef(el)}
-                placeholder="Type here..."
-                multiline={true}
-                autofocus={true}
-                onKeyPress={onChange}
-                rightButtons={
-                  <Button
-                    color="white"
-                    backgroundColor="black"
-                    text="Send"
-                    onClick={addMessage}
-                  />
-                }
-              />
-            </Box>
+      <Box height="95vh" display="flex" flexDirection="column">
+        <Box className={classes.purple}>
+          <Typography variant="h5" align="left" >{channelName}(Online: {channelCnt})</Typography>
         </Box>
-      </Grid>
+        <Box flex={1} overflow="auto">
+            <MessageList
+              lockable={true}
+              toBottomHeight={'100%'}
+              dataSource={messageList}
+            />
+          </Box>
+          <Box >
+            <Input
+              className={classes.purple}
+              ref={(el) => setInputRef(el)}
+              placeholder="Type here..."
+              multiline={true}
+              autofocus={true}
+              onKeyPress={onChange}
+              rightButtons={
+                <Button
+                  color="white"
+                  backgroundColor="black"
+                  text="Send"
+                  onClick={addMessage}
+                />
+              }
+            />
+          </Box>
+      </Box>
   );
 }
 export default Channel;
