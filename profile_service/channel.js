@@ -13,15 +13,23 @@ const { makeid } = require('./utils');
  * @return {number} x raised to the n-th power.
  */
 
+function _unpack_people_map(people){
+    var result = []
+    for (const k in people) {
+        result.push({username: k, avatar_url: people[k].M.avatar_url.S});
+    }
+    return result;
+}
+
 function create_channel(socket, channel_name, username, avatar_url) {
     var channel_id = makeid(16);
     var people_obj = {};
     people_obj[username] = {
         M: {
             "avatar_url": {
-                "S": user['avatar_url']
+                "S": avatar_url
             },
-            "uid": {
+            "username": {
                 "S": username
             }
         }
@@ -37,18 +45,22 @@ function create_channel(socket, channel_name, username, avatar_url) {
             },
         }
     };
-    console.log(params);
-
     const command = new PutItemCommand(params);
-    client.send(command).then(
+    return client.send(command).then(
         (data) => {
             // process data.
-            console.log(data);
             var response_map = {
                 "message": "Success",
                 "channel_id": channel_id,
             };
+            var created_channel = {
+                "channel_id": channel_id,
+                "channel_name": channel_name,
+                "people_count": 1,
+                "people": [{ "username": username, "avatar_url": avatar_url }]
+            };
             socket.emit('channel_response', response_map);
+            return created_channel;
         },
         (error) => {
             console.log(error);
@@ -81,7 +93,7 @@ function enter_channel(socket, channel_id, username, avatar_url) {
     };
 
     var command = new UpdateItemCommand(params);
-    client.send(command).then(
+    return client.send(command).then(
         (data) => {
             
             var user_count = parseInt(data.Attributes.people_count.N);
@@ -90,7 +102,16 @@ function enter_channel(socket, channel_id, username, avatar_url) {
                 "user_count": user_count,
                 "message": "Success"
             }
+            var people = _unpack_people_map(data.Attributes.people.M);
+            var entered_channel = {
+                'channel_id': data.Attributes.channel_id.S,
+                'channel_name': data.Attributes.channel_name.S,
+                'people': people,
+                'people_count': parseInt(data.Attributes.people_count.N)
+            };
+
             socket.emit('channel_response', response_map);
+            return entered_channel
         },
         (error) => {
             socket.emit('channel_response', { "message": error });
@@ -127,13 +148,22 @@ function leave_channel(socket, channel_id, username) {
     };
 
     var command = new UpdateItemCommand(params);
-    client.send(command).then(
+    return client.send(command).then(
         (data) => {
             // delete the channel if no one in it
             var user_count = parseInt(data.Attributes.people_count.N);
             if (user_count === 0) delete_channel(channel_id);
 
             socket.emit('channel_response', { "message": "Success" });
+            var people = _unpack_people_map(data.Attributes.people.M);
+            var left_channel = {
+                'channel_id': data.Attributes.channel_id.S,
+                'channel_name': data.Attributes.channel_name.S,
+                'people': people,
+                'people_count': parseInt(data.Attributes.people_count.N)
+            };
+            console.log(left_channel);
+            return left_channel;
         },
         (error) => {
             console.log(error);
