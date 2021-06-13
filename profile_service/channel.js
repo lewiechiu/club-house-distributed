@@ -13,14 +13,6 @@ const { makeid } = require('./utils');
  * @return {number} x raised to the n-th power.
  */
 
-function _unpack_people_map(people){
-    var result = []
-    for (const k in people) {
-        result.push({username: k, avatar_url: people[k].M.avatar_url.S});
-    }
-    return result;
-}
-
 function create_channel(socket, channel_name, username, avatar_url) {
     var channel_id = makeid(16);
     var people_obj = {};
@@ -45,22 +37,18 @@ function create_channel(socket, channel_name, username, avatar_url) {
             },
         }
     };
+    console.log(params);
+
     const command = new PutItemCommand(params);
-    return client.send(command).then(
+    client.send(command).then(
         (data) => {
             // process data.
+            console.log(data);
             var response_map = {
                 "message": "Success",
                 "channel_id": channel_id,
             };
-            var created_channel = {
-                "channel_id": channel_id,
-                "channel_name": channel_name,
-                "people_count": 1,
-                "people": [{ "username": username, "avatar_url": avatar_url }]
-            };
             socket.emit('channel_response', response_map);
-            return created_channel;
         },
         (error) => {
             console.log(error);
@@ -93,7 +81,7 @@ function enter_channel(socket, channel_id, username, avatar_url) {
     };
 
     var command = new UpdateItemCommand(params);
-    return client.send(command).then(
+    client.send(command).then(
         (data) => {
             
             var user_count = parseInt(data.Attributes.people_count.N);
@@ -102,16 +90,7 @@ function enter_channel(socket, channel_id, username, avatar_url) {
                 "user_count": user_count,
                 "message": "Success"
             }
-            var people = _unpack_people_map(data.Attributes.people.M);
-            var entered_channel = {
-                'channel_id': data.Attributes.channel_id.S,
-                'channel_name': data.Attributes.channel_name.S,
-                'people': people,
-                'people_count': parseInt(data.Attributes.people_count.N)
-            };
-
             socket.emit('channel_response', response_map);
-            return entered_channel
         },
         (error) => {
             socket.emit('channel_response', { "message": error });
@@ -148,21 +127,13 @@ function leave_channel(socket, channel_id, username) {
     };
 
     var command = new UpdateItemCommand(params);
-    return client.send(command).then(
+    client.send(command).then(
         (data) => {
             // delete the channel if no one in it
             var user_count = parseInt(data.Attributes.people_count.N);
             if (user_count === 0) delete_channel(channel_id);
 
             socket.emit('channel_response', { "message": "Success" });
-            var people = _unpack_people_map(data.Attributes.people.M);
-            var left_channel = {
-                'channel_id': data.Attributes.channel_id.S,
-                'channel_name': data.Attributes.channel_name.S,
-                'people': people,
-                'people_count': parseInt(data.Attributes.people_count.N)
-            };
-            return left_channel;
         },
         (error) => {
             console.log(error);
@@ -172,7 +143,8 @@ function leave_channel(socket, channel_id, username) {
 }
 
 
-function get_all_channels(res, limit){
+function get_all_channels(socket, channel_id){
+    const limit = 20;
     var params = {
         TableName: 'channel'
         // TODO
@@ -182,31 +154,43 @@ function get_all_channels(res, limit){
     client.send(command).then(
         (data) => {
             // sorted by people_count
-            var top_channels = data['Items'].sort((a, b) => Object.values(b['people_count'])[0] - Object.values(a['people_count'])).slice(0, limit);
+            var sorted_channels =  data['Items'].sort((a, b) => Object.values(b['people_count'])[0] - Object.values(a['people_count']));
+            var res_channels;
+
+            if (channel_id === ""){
+                // send top 20 channels
+                res_channels = sorted_channels.slice(0, limit);
+            }
+            else if (channel_id !== ""){
+                // find the index of the channel_id
+                var channel_indx = sorted_channels.findIndex(function(item, i){
+                    return item.channel_id.S === channel_id;
+                });
+                res_channels = sorted_channels.slice((channel_indx+1), (channel_indx+1+limit));
+            }
             var res_data = [];
-            top_channels.forEach(function(x) {
+            res_channels.forEach(function(x) {
                     res_data.push({
-                        "users": Object.values(x["people"])[0],
-                        "channel_name": Object.values(x["channel_name"])[0],
-                        "channel_id": Object.values(x["channel_id"])[0],
-                        "people_count": Number(Object.values(x["people_count"])[0]),
+                        "users": x.people.M,  // TODO
+                        "channel_name": x.channel_name.S,
+                        "channel_id": x.channel_id.S, 
+                        "people_count": x.people_count.N,
                     });
             });
-            //console.log(res_data);
-            res.send(res_data);
+            socket.emit('channel_response', res_data); 
         },
         (error) => {
             console.log(error);
-            res.status(500).send( {"message": error} ); 
+            socket.emit('channel_response', {"message": error} ); 
         }
     );   
 }
 
-function get_all_messages(res, msg_params){
+function get_all_messages(socket, msg_params){
 
     var channel_id = msg_params['channel_id'];
     var message_id = msg_params['message_id'];
-    var message_count = Number(msg_params['count']);
+    const message_count = 50;    //Number(msg_params['count']);
 
     if (message_id === ""){
         //最新的count筆messages
@@ -226,22 +210,26 @@ function get_all_messages(res, msg_params){
                 console.log(data);
                 var res_data = [];
                 data["Items"].forEach(function(x) {
-                        res_data.push({
-                            "message_id": Object.values(x["message_id"])[0],
-                            "type": Object.values(x["type"])[0], 
-                            "text": Object.values(x["text"])[0],  
-                            "image_url": Object.values(x["image_url"])[0],
-                            "sender_id": Object.values(x["sender_id"])[0],
-                            "sender_avatar":  Object.values(x["sender_avatar"])[0],
-                            "datetime": Object.values(x["datetime"])[0],
-                        });
+                    res_data.push({
+                        "message_id": x.message_id.S, 
+                        "type": x.type.S, 
+                        "text": x.text.S,  
+                        "image_url": x.image_url.S,
+                        "username": x.username.S,  
+                        "sender_avatar": x.sender_avatar.S, 
+                        "datetime": x.datetime.S,
+                    });
                 });
-                res.send(res_data);
+                socket.emit('message_response', {
+                    "action": "get_all",
+                    "data": res_data,
+                });
             },
             (error) => {
                 console.log(error);
-                res.status(500).send({
-                    "message": error,
+                socket.emit('message_response', {
+                    "action": "get_all",
+                    "data": [],
                 });
             }
         );      
@@ -280,33 +268,38 @@ function get_all_messages(res, msg_params){
                 var command = new QueryCommand(params);
                 client.send(command).then(
                     (data) => {
-                        //console.log(data);
+                        console.log(data);
                         var res_data = [];
                         data["Items"].forEach(function(x) {
-                                res_data.push({
-                                    "message_id": Object.values(x["message_id"])[0],
-                                    "type": Object.values(x["type"])[0], 
-                                    "text": Object.values(x["text"])[0],  
-                                    "image_url": Object.values(x["image_url"])[0],
-                                    "sender_id": Object.values(x["sender_id"])[0],
-                                    "sender_avatar":  Object.values(x["sender_avatar"])[0],
-                                    "datetime": Object.values(x["datetime"])[0],
-                                });
+                            res_data.push({
+                                "message_id": x.message_id.S, 
+                                "type": x.type.S, 
+                                "text": x.text.S,  
+                                "image_url": x.image_url.S,
+                                "username": x.username.S,  
+                                "sender_avatar": x.sender_avatar.S, 
+                                "datetime": x.datetime.S,
+                            });
                         });
-                        res.send(res_data);
+                        socket.emit('message_response', {
+                            "action": "get_all",
+                            "data": res_data,
+                        });
                     },
                     (error) => {
                         console.log(error);
-                        res.status(500).send({
-                            "message": error,
+                        socket.emit('message_response', {
+                            "action": "get_all",
+                            "data": [],
                         });
                     }
                 );  
             },
             (error) => {
                 console.log(error);
-                res.status(500).send({
-                    "message": error,
+                socket.emit('message_response', {
+                    "action": "get_all",
+                    "data": [],
                 });
             }
         );
