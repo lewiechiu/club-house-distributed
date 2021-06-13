@@ -162,7 +162,6 @@ function leave_channel(socket, channel_id, username) {
                 'people': people,
                 'people_count': parseInt(data.Attributes.people_count.N)
             };
-            console.log(left_channel);
             return left_channel;
         },
         (error) => {
