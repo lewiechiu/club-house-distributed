@@ -8,11 +8,12 @@ const redisAdapter = require('socket.io-redis');
 const profile = require('./profile');
 const channel = require('./channel');
 const message = require('./message');
-const { error } = require('console');  
+const config = require('./config');
+const { error } = require('console');
+const path = require('path');
 
 
 // Constants
-const PORT = 8080;
 const HOST = "0.0.0.0";
 
 // App
@@ -20,7 +21,7 @@ const app = express();
 app.use(compression());
 const http = require('http').createServer(app);   
 const io = require("socket.io")(http);    
-io.adapter(redisAdapter({host: 'localhost', port: 6379}));    
+io.adapter(redisAdapter({host: config.REDIS_ENDPOINT, port: 6379}));
 
 
 io.on('connection', (socket) => {
@@ -48,26 +49,35 @@ io.on('connection', (socket) => {
         if (action === "create") {
           var avatar_url = params['avatar_url'];
           var channel_name = params['channel_name'];
-          channel.create_channel(socket, channel_name, username, avatar_url);
+          return channel.create_channel(socket, channel_name, username, avatar_url);
         }
         else if (action === "enter") {
           var avatar_url = params['avatar_url'];
           var channel_id = params['channel_id'];
-          channel.enter_channel(socket, channel_id, username, avatar_url);
+          return channel.enter_channel(socket, channel_id, username, avatar_url);
         }
         else if (action === "leave") {
           var channel_id = params['channel_id'];
-          channel.leave_channel(socket, channel_id, username);
+          return channel.leave_channel(socket, channel_id, username);
         }
         else if (action === "get_all") {
           var channel_id = params['channel_id'];
-          channel.get_all_channels(socket, channel_id);
+          return channel.get_all_channels(socket, channel_id);
         }
         //else if (action === "get_all_message") {
         //  channel.get_all_messages(res, req.body);
         //}
       })
+	  .then((data) => {
+        console.log(data);
+        var response_map = {
+          action: action,
+          data: data
+        };
+        socket.broadcast.emit('receive_channel', response_map)
+		})	
       .catch((error) => {
+		console.log(error);
         socket.emit('channel_response', { 'message': 'token invalid' });
       });
     
@@ -87,6 +97,13 @@ io.on('connection', (socket) => {
           channel.get_all_messages(socket, params);
         }
       })
+	  .then(() => {
+        var response_map = {
+          action: action,
+          data: { channel_id: channel_id, username: username }
+        };
+        socket.broadcast.emit('receive_message', response_map)
+      })
       .catch((error) => {
         socket.emit('message_response', {'message': 'token invalid'})
       });
@@ -101,12 +118,12 @@ io.on('connection', (socket) => {
 });
 
 app.get("/", (req, res) => {
-  res.sendFile('/home/louiechiu/club-house-distributed/profile_service/index.html');
+    res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 
-http.listen(PORT, () => {
-  console.log('listening on ' + PORT);
+http.listen(config.PORT, () => {
+  console.log('listening on ' + config.PORT);
 });
 // app.listen(PORT, HOST);
 // messages
