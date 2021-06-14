@@ -6,15 +6,12 @@ const currentUser = AuthService.getCurrentUser();
 const useChat = () => {
     const [messageList, setMessageList] = useState([]);
     useEffect(() => {
-        console.log('trigger useEffect in middleware');
         socket.on('receive_message', (response) => {
-            console.log(response);
-            return response;
+            const { data } = response;
+            // console.log('trigger socket receive_message');
+            setMessageList([...messageList, data]);
         });
-        // setMessageList([...messageList, response]);
-        console.log(messageList);
-    }, [messageList]);
-
+    });
     const sendMsg = async (
         channel_id,
         type,
@@ -41,6 +38,7 @@ const useChat = () => {
                     resolve(response);
                 });
             });
+            setMessageList([...messageList, data]);
             return response;
         } catch (err) {
             console.error(err);
@@ -64,7 +62,7 @@ const useChat = () => {
                 });
             });
             //TODO: reverse response
-            setMessageList([...response, ...messageList]);
+            setMessageList([...messageList, ...response.reverse()]);
         } catch (err) {
             console.error(err);
             return null;

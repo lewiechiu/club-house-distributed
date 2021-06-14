@@ -27,8 +27,6 @@ function Channel(props) {
     var [inputRef, setInputRef] = useState(React.createRef());
     const { messageList, sendMsg, getAllMsgs } = useChat();
     const currentUser = AuthService.getCurrentUser();
-    // const currentUser = { username: 'Nick', user_id: 'b05502058' };
-    // const currentUserName = currentUser ? currentUser.username : 'NotFoundName';
 
     const addMessage = async () => {
         await sendMsg(
