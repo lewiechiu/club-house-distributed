@@ -25,6 +25,7 @@ function _unpack_people_map(people){
 function create_channel(socket, channel_name, username, avatar_url) {
     var channel_id = makeid(16);
     var people_obj = {};
+    // TODO fix the auto add user once create
     people_obj[username] = {
         M: {
             "avatar_url": {
@@ -200,6 +201,7 @@ function get_all_channels(socket, channel_id){
                 res_channels = sorted_channels.slice((channel_indx+1), (channel_indx+1+limit));
             }
             var res_data = [];
+            console.log(res_channels);
             res_channels.forEach(function(x) {
                     res_data.push({
                         "users": _unpack_people_map(x.people.M),
@@ -220,7 +222,7 @@ function get_all_channels(socket, channel_id){
 function get_all_messages(socket, msg_params){
 
     var channel_id = msg_params['channel_id'];
-    var message_id = msg_params['message_id'];
+    var message_id = msg_params['message_id'] || '';
     const message_count = 50;    //Number(msg_params['count']);
 
     if (message_id === ""){
@@ -238,7 +240,6 @@ function get_all_messages(socket, msg_params){
         var command = new QueryCommand(params);
         client.send(command).then(
             (data) => {
-                console.log(data);
                 var res_data = [];
                 data["Items"].forEach(function(x) {
                     res_data.push({
@@ -257,7 +258,6 @@ function get_all_messages(socket, msg_params){
                 });
             },
             (error) => {
-                console.log(error);
                 socket.emit('message_response', {
                     "action": "get_all",
                     "data": [],
@@ -299,7 +299,6 @@ function get_all_messages(socket, msg_params){
                 var command = new QueryCommand(params);
                 client.send(command).then(
                     (data) => {
-                        //console.log(data);
                         var res_data = [];
                         data["Items"].forEach(function(x) {
                             res_data.push({

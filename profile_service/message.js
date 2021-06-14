@@ -29,13 +29,25 @@ function send_message(socket, message_param){
         }
     };
 
+    var message_object = {
+        message_id: message_id,
+        username: username,
+        type: type,
+        text: text,
+        image_url: image_url,
+        sender_avatar: sender_avatar,
+        channel_id: channel_id,
+        datetime: datetime
+    };
+
     const command = new PutItemCommand(params);
-    client.send(command).then(
+    return client.send(command).then(
         (data) => {
             socket.emit('message_response', {
                 "action": "send",
                 "message": "Success",
             });
+            return message_object
         },
         (error) => {
 			socket.emit('message_response', {

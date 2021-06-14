@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+   <title>Hello world</title>
+</head>
+<script src="/socket.io/socket.io.js"></script>
+
+<script>
+   const socket = io();
+   socket.on('DEBUG', (msg) => {
+      console.log(msg);
+   });
+
+   socket.on('login_response', (msg) => {
+      console.log(msg);
+   });
+
+   socket.on('channel_response', (msg) => {
+      console.log(msg);
+   });
+
+   socket.on('message_response', (msg) => {
+      console.log(msg);
+   });
+
+   socket.on('receive_channel', (msg) => {
+      console.log(msg);
+   });
+
+   socket.on('receive_message', (msg) => {
+      console.log(msg);
+   });
+</script>
+
+<body>Hello</body>
+
+</html>

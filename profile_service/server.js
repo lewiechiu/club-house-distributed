@@ -1,9 +1,9 @@
 "use strict";
 
 const express = require('express');
-const cors = require('cors');  
-const compression = require('compression'); 
-const redisAdapter = require('socket.io-redis');  
+const cors = require('cors');
+const compression = require('compression');
+const redisAdapter = require('socket.io-redis');
 
 const profile = require('./profile');
 const channel = require('./channel');
@@ -19,19 +19,16 @@ const HOST = "0.0.0.0";
 // App
 const app = express();
 app.use(compression());
-const http = require('http').createServer(app);   
-const io = require("socket.io")(http);    
-io.adapter(redisAdapter({host: config.REDIS_ENDPOINT, port: 6379}));
+const http = require('http').createServer(app);
+const io = require("socket.io")(http);
+io.adapter(redisAdapter({ host: config.REDIS_ENDPOINT, port: 6379 }));
 
 
 io.on('connection', (socket) => {
   console.log('a user connected');
-  socket.on('POST channel',(params) => {
-    console.log(params);
-  });
 
-  socket.on('login',(params) => {
-   
+  socket.on('login', (params) => {
+
     var username = params['username'];
     var password = params['password'];
     socket.emit('login response', params);
@@ -42,10 +39,10 @@ io.on('connection', (socket) => {
     var action = params['action'];
     var token = params['token'];
     var username = params['username'];
-    
+
     profile.token_auth(username, token)
       .then(() => {
-        
+
         if (action === "create") {
           var avatar_url = params['avatar_url'];
           var channel_name = params['channel_name'];
@@ -68,44 +65,47 @@ io.on('connection', (socket) => {
         //  channel.get_all_messages(res, req.body);
         //}
       })
-	  .then((data) => {
-        console.log(data);
-        var response_map = {
-          action: action,
-          data: data
-        };
-        socket.broadcast.emit('receive_channel', response_map)
-		})	
+      .then((data) => {
+        if (action !== 'get_all'){
+          var response_map = {
+            action: action,
+            data: data
+          };
+          socket.broadcast.emit('receive_channel', response_map)
+          return ;
+        }
+      })
       .catch((error) => {
-		console.log(error);
+        console.log(error);
         socket.emit('channel_response', { 'message': 'token invalid' });
       });
-    
+
   });
 
   socket.on('message', (params) => {
     var action = params['action'];
     var token = params['token'];
     var username = params['username'];
-    //var channel_id = params['channel_id'];
     profile.token_auth(username, token)
-      .then((data) => {
-        if (action === 'send'){
-          message.send_message(socket, params);
+      .then(() => {
+        if (action === 'send') {
+          return message.send_message(socket, params);
         }
-        else if (action === 'get_all'){
+        else if (action === 'get_all') {
           channel.get_all_messages(socket, params);
         }
       })
-	  .then(() => {
-        var response_map = {
-          action: action,
-          data: { channel_id: channel_id, username: username }
-        };
-        socket.broadcast.emit('receive_message', response_map)
+      .then((message) => {
+        if (action === 'send') {
+          var response_map = {
+            action: action,
+            data: message
+          };
+          socket.broadcast.emit('receive_message', response_map)
+        }
       })
       .catch((error) => {
-        socket.emit('message_response', {'message': 'token invalid'})
+        socket.emit('message_response', { 'message': 'token invalid' })
       });
 
 
@@ -118,7 +118,7 @@ io.on('connection', (socket) => {
 });
 
 app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 
