@@ -67,7 +67,7 @@ const useChat = () => {
                 });
             });
             setPrevChannelId(channel_id);
-            setMessageList([...local_msgList, ...response.reverse()]);
+            setMessageList([...response.reverse(), ...local_msgList]);
         } catch (err) {
             console.error(err);
             return null;

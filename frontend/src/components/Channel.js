@@ -38,9 +38,8 @@ function Channel(props) {
             new Date().toISOString()
         ).then(
             (res) => {
-                console.log(res);
-                if (res?.message === 'success') {
-                    console.log('Log in success.');
+                if (res?.message === 'Success') {
+                    // console.log('Log in success.');
                 } else {
                     const errorMsg = res?.errorMsg;
                     console.log(errorMsg);
@@ -83,10 +82,24 @@ function Channel(props) {
         }
     };
 
+    const isScrollTop = (e) => {
+        console.log(e.target.scrollTop);
+        if (e.target.scrollTop === 0) {
+            // getAllMsgs(channelId, '')
+            console.log('is top');
+        }
+    };
+
+    const loadMore = () => {
+        if (messageList) {
+            getAllMsgs(channelId, messageList[0].message_id);
+        }
+    };
+
     useEffect(() => {
         getAllMsgs(channelId, '');
         // subscribeMsg();
-    }, channelId);
+    }, [channelId]);
 
     return (
         <Box height="95vh" display="flex" flexDirection="column">
@@ -94,13 +107,16 @@ function Channel(props) {
                 <Typography variant="h5" align="left">
                     {channelName}(Online: {channelCnt})
                 </Typography>
+                <Button text="LoadMore Down" onClick={loadMore}></Button>
             </Box>
+
             <Box flex={1} overflow="auto">
                 <MessageList
                     className="message-list"
                     lockable={true}
                     toBottomHeight={'100%'}
                     dataSource={preprocess(messageList)}
+                    onScroll={isScrollTop}
                 />
             </Box>
             <Box>
