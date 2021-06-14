@@ -76,41 +76,6 @@ function Channel(props) {
         });
     };
 
-    const getMessageList = async () => {
-        // let data = await MsgService.getAllMsgs(channelId);
-        let get_data = [
-            {
-                message_id: '',
-                type: 'text',
-                text: 'lalallalala',
-                image_url: '',
-                sender_id: 'b05303124',
-                sender_avatar: 'https://randomuser.me/api/portraits/men/50.jpg',
-                datetime: new Date(),
-            },
-            {
-                message_id: '',
-                type: 'text',
-                text: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit',
-                image_url: '',
-                sender_id: 'b05502058',
-                sender_avatar: 'https://randomuser.me/api/portraits/men/60.jpg',
-                datetime: new Date(),
-            },
-            {
-                message_id: '',
-                type: 'photo',
-                text: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit',
-                image_url: '',
-                sender_id: 'b05502058',
-                sender_avatar: 'https://randomuser.me/api/portraits/men/60.jpg',
-                data: 'https://randomuser.me/api/portraits/men/60.jpg',
-                datetime: new Date(),
-            },
-        ];
-        const data = preprocess(get_data);
-    };
-
     const onChange = async (e) => {
         if (!e.shiftKey && e.charCode === 13 && e.target.value !== '') {
             addMessage();
@@ -121,7 +86,7 @@ function Channel(props) {
     useEffect(() => {
         getAllMsgs(channelId, '');
         // subscribeMsg();
-    }, [channelId]);
+    }, channelId);
 
     return (
         <Box height="95vh" display="flex" flexDirection="column">
@@ -132,6 +97,7 @@ function Channel(props) {
             </Box>
             <Box flex={1} overflow="auto">
                 <MessageList
+                    className="message-list"
                     lockable={true}
                     toBottomHeight={'100%'}
                     dataSource={preprocess(messageList)}

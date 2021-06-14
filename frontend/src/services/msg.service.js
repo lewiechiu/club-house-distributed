@@ -5,10 +5,10 @@ const currentUser = AuthService.getCurrentUser();
 
 const useChat = () => {
     const [messageList, setMessageList] = useState([]);
+    const [prevChannelId, setPrevChannelId] = useState('');
     useEffect(() => {
         socket.on('receive_message', (response) => {
             const { data } = response;
-            // console.log('trigger socket receive_message');
             setMessageList([...messageList, data]);
         });
     });
@@ -55,33 +55,30 @@ const useChat = () => {
             message_id: message_id,
         };
         try {
+            let local_msgList = messageList;
+            if (prevChannelId !== channel_id) {
+                setMessageList([]);
+                local_msgList = [];
+            }
             socket.emit('message', data);
             let response = await new Promise((resolve) => {
                 socket.on('message_response', (response) => {
                     resolve(response.data);
                 });
             });
-            //TODO: reverse response
-            setMessageList([...messageList, ...response.reverse()]);
+            setPrevChannelId(channel_id);
+            setMessageList([...local_msgList, ...response.reverse()]);
         } catch (err) {
             console.error(err);
             return null;
         }
     };
 
-    // useEffect(() => {
-    //     socket.on('receive_message', (response) => {
-    //         setMessageList((messageList) => [...messageList, response]);
-    //     });
-    // });
     return {
         messageList,
         sendMsg,
         getAllMsgs,
-        // subscribeMsg,
     };
 };
-
-//TODO: on receive_message
 
 export default useChat;
