@@ -1,89 +1,121 @@
-import httpClient from './httpClient';
+import socket from './SocketClient';
+import { useEffect, useState } from 'react';
+import AuthService from './auth.service';
+const currentUser = AuthService.getCurrentUser();
 
-const END_POINT = '/channel';
-
-const getAllChannels = async () => {
-  try {
-    const response = await httpClient.get('/all_channels');
-    return response.data;
-  } catch (err) {
-    console.error(err);
-    return null;
-  }
-};
-
-const createChannel = async (uid, channel_name) => {
-  const data = {
-    action: 'create',
-    uid: uid,
-    channel_name: channel_name,
-  };
-  try {
-    const response = await httpClient.post(END_POINT, data, {
-      headers: { 'Content-Type': 'application/json' },
+const useChannel = () => {
+    const [channelList, setChannelList] = useState([]);
+    useEffect(() => {
+        socket.on('receive_channel', (response) => {
+            //TODO
+        });
     });
-    return response.data;
-  } catch (err) {
-    console.error(err);
-    return null;
-  }
+    const getAllChannels = async (channel_id) => {
+        let data = {
+            username: currentUser.username,
+            token: currentUser.token,
+            action: 'get_all',
+            channel_id: channel_id,
+        };
+        try {
+            socket.emit('channel', data);
+            let response = await new Promise((resolve) => {
+                socket.on('channel_response', (response) => {
+                    // console.log(response);
+                    resolve(response);
+                });
+            });
+            setChannelList([...channelList, ...response]);
+        } catch (err) {
+            console.error(err);
+            return null;
+        }
+    };
+
+    const createChannel = async (channel_name) => {
+        let data = {
+            username: currentUser.username,
+            token: currentUser.token,
+            action: 'create',
+            channel_name: channel_name,
+            avatar_url: currentUser.avatar_url,
+        };
+        try {
+            socket.emit('channel', data);
+            return new Promise((resolve) => {
+                socket.on('channel_response', (response) => {
+                    console.log(response);
+                    resolve(response);
+                });
+            });
+        } catch (err) {
+            console.error(err);
+            return null;
+        }
+    };
+
+    const enterChannel = async (channel_id) => {
+        let data = {
+            username: currentUser.username,
+            token: currentUser.token,
+            action: 'enter',
+            channel_id: channel_id,
+            avatar_url: currentUser.avatar_url,
+        };
+        try {
+            socket.emit('channel', data);
+            return new Promise((resolve) => {
+                socket.on('channel_response', (response) => {
+                    console.log(response);
+                    resolve(response);
+                });
+            });
+        } catch (err) {
+            console.error(err);
+            return null;
+        }
+    };
+
+    const leaveChannel = async (channel_id) => {
+        let data = {
+            username: currentUser.username,
+            token: currentUser.token,
+            action: 'leave',
+            channel_id: channel_id,
+        };
+        try {
+            socket.emit('channel', data);
+            return new Promise((resolve) => {
+                socket.on('channel_response', (response) => {
+                    console.log(response);
+                    resolve(response);
+                });
+            });
+        } catch (err) {
+            console.error(err);
+            return null;
+        }
+    };
+
+    const reloadChannel = async () => {
+        try {
+            socket.on('receive_channel', (response) => {
+                console.log(response);
+                return response;
+            });
+        } catch (err) {
+            console.error(err);
+            return null;
+        }
+    };
+    return {
+        channelList,
+        getAllChannels,
+        createChannel,
+        enterChannel,
+        leaveChannel,
+        reloadChannel,
+    };
 };
 
-const enterChannel = async (uid, channel_id) => {
-  const data = {
-    action: 'enter',
-    uid: uid,
-    channel_id: channel_id,
-  };
-  try {
-    const response = await httpClient.post(END_POINT, data, {
-      headers: { 'Content-Type': 'application/json' },
-    });
-    return response.data;
-  } catch (err) {
-    console.error(err);
-    return null;
-  }
-};
-
-const leaveChannel = async (uid, channel_id) => {
-  const data = {
-    action: 'leave',
-    uid: uid,
-    channel_id: channel_id,
-  };
-  try {
-    const response = await httpClient.post(END_POINT, data, {
-      headers: { 'Content-Type': 'application/json' },
-    });
-    return response.data;
-  } catch (err) {
-    console.error(err);
-    return null;
-  }
-};
-
-const reloadChannel = async (uid, channel_id) => {
-  const data = {
-    action: 'reload',
-    uid: uid,
-    channel_id: channel_id,
-  };
-  try {
-    const response = await httpClient.post(END_POINT, data, {
-      headers: { 'Content-Type': 'application/json' },
-    });
-    return response.data;
-  } catch (err) {
-    console.error(err);
-    return null;
-  }
-};
-
-export default {
-  getAllChannels,
-  createChannel,
-  enterChannel,
-  leaveChannel,
-  reloadChannel,
-};
+export default useChannel;
