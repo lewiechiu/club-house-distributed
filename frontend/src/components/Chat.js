@@ -24,7 +24,7 @@ function Chat() {
     var channelId = 1;
 
     return (
-        <Grid container spacing={5}>
+        <Grid container>
             <Grid item xs={2} md={4} className={classes.blueGreyLeft}>
                 <ChannelList
                     curChannelId={curChannelId}
