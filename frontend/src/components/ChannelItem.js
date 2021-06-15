@@ -50,6 +50,12 @@ export default function ChannelList(props) {
                         >
                             {data.channel_name}({data.people_count})
                         </Typography>
+                        <Typography
+                            variant="subtitle2"
+                            className={classes.content}
+                        >
+                            {data.channel_id}
+                        </Typography>
                         <AvatarGroup max={5}>
                             {data.users.map((user) =>
                                 user.avatar_url === '' ? (

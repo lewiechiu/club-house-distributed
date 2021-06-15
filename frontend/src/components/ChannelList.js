@@ -6,44 +6,23 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemAvatar from '@material-ui/core/ListItemAvatar';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import Button from '@material-ui/core/Button';
+import TextField from '@material-ui/core/TextField';
 import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline';
+import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import IconButton from '@material-ui/core/IconButton';
 import Avatar from '@material-ui/core/Avatar';
 import Identicon from 'react-identicons';
 import blueGrey from '@material-ui/core/colors/blueGrey';
-import Button from '@material-ui/core/Button';
 
 import AuthService from '../services/auth.service';
 import useChannel from '../services/channel.service';
-// Fake data
-// const channelListData = [
-//     {
-//         channel_id: Math.random().toString(),
-//         people_count: 100,
-//         channel_name: 'Singing channel',
-//         users: [
-//             { username: 'John', avatar_url: 'logo192.png' },
-//             { username: 'Mary', avatar_url: '' },
-//             { username: 'Coco', avatar_url: 'logo192.png' },
-//             { username: 'Kan', avatar_url: '' },
-//             { username: 'Kelly', avatar_url: '' },
-//             { username: 'Kan', avatar_url: '' },
-//             { username: 'Kelly', avatar_url: '' },
-//         ],
-//     },
-//     {
-//         channel_id: Math.random().toString(),
-//         people_count: 50,
-//         channel_name: 'NTU channel',
-//         users: [
-//             { username: 'John', avatar_url: '' },
-//             { username: 'Mary', avatar_url: '' },
-//             { username: 'Coco', avatar_url: 'logo192.png' },
-//             { username: 'Kan', avatar_url: 'logo192.png' },
-//             { username: 'Kelly', avatar_url: '' },
-//         ],
-//     },
-// ];
+
 
 // css
 const useStyles = makeStyles((theme) => ({
@@ -69,12 +48,17 @@ const useStyles = makeStyles((theme) => ({
         marginLeft: theme.spacing(2),
         justify: 'flex-end',
     },
+    secondaryAction: {
+        paddingRight: 30
+    },
 }));
 
 export default function ChannelList(props) {
-    const currentUser = AuthService.getCurrentUser();
     const classes = useStyles();
-    // const [channelList, setChannelList] = useState(channelListData);
+    const [open, setOpen] = useState(false);
+    const [newChannelTitle, setNewChannelTitle] = useState("")
+    const currentUser = AuthService.getCurrentUser();
+
     const {
         channelList,
         getAllChannels,
@@ -93,56 +77,62 @@ export default function ChannelList(props) {
         setCurChannelCnt,
     } = props;
 
-    // click "join channel"
+
+    const handleClose = () => {
+        setOpen(false);
+    }
+
+    const handleOpen = () => {
+        setOpen(true);
+    }
+
+    const handleInput = evt => {
+        const title = evt.target.value;
+        setNewChannelTitle(title);
+    };
+
+    const handleLogout = () => {
+        if (curChannelId !== '') {
+            leaveChannel(curChannelId);
+        }
+        AuthService.logout();
+    };
+
+    //create channel
+    const handleCreate = evt => {
+        evt.preventDefault();
+        createChannel(newChannelTitle, (err, data) => {
+            if(err) {
+                console.log("Create Channel Fail!")
+                return;
+            }
+            if (curChannelId !== '') {
+                leaveChannel(curChannelId);
+            }
+            setCurChannelId(data);
+            setCurChannelName(newChannelTitle);
+            setCurChannelCnt(1);
+        })
+    };
+    
+    // Enter channel
     const handleJoin = (cid) => {
-        console.log(`Join channel ${cid}!`);
+        enterChannel(cid);
+        if (curChannelId !== '') {
+            leaveChannel(curChannelId);
+        }
         setCurChannelId(cid);
         const curChannelData = channelList.find(
             (cdata) => cdata.channel_id === cid
         );
-        console.log('cur: ', curChannelData);
         setCurChannelName(curChannelData.channel_name);
-        setCurChannelCnt(curChannelData.people_count);
-        if (curChannelId === '') {
-            //S: Enter channel
-        } else {
-            //S: Leave channel and enter another channel
-        }
-    };
-
-    //click "create channel"
-    const handleCreate = () => {
-        console.log('Create channel!');
-        if (curChannelId === '') {
-            //S: Create channel and get cid
-            // setCurChannelId(cid);
-        } else {
-            //S: Leave channel, create one channel and get cid
-            // setCurChannelId(cid);
-        }
-    };
-
-    const handleLogout = () => {
-        AuthService.logout();
+        setCurChannelCnt(parseInt(curChannelData.people_count)+1);
     };
 
     //Get channel list in first render
     useEffect(() => {
-        console.log('Get channel list in first render!');
         getAllChannels('');
-        //S: Get all channel
-        // setChannelList(data)
     }, []);
-
-    //Update channel list at all time
-    useEffect(() => {
-        console.log('Update channel list at all time...');
-        //S: Receive updated channel and resort channel list
-        // let newChannel = {};
-        // let newList = [...channelList, newChannel];
-        // let newSortList = newList.sort((a, b) => (a.user_count > b.user_count ? 1 : -1));
-        // setChannelList(newSortList.slice(0, -1));
-    });
 
     return (
         <List className={classes.list}>
@@ -159,17 +149,16 @@ export default function ChannelList(props) {
                         <Identicon string={currentUser.username} size="25" />
                     </Avatar>
                 </ListItemAvatar>
-                <ListItemText primary={currentUser.username} />
-                <Button
-                    size="small"
-                    variant="contained"
-                    color="secondary"
-                    className={classes.logoutBtn}
-                    onClick={handleLogout}
-                >
-                    LOG OUT
-                </Button>
-                <ListItemSecondaryAction onClick={handleCreate}>
+                <ListItemText primary={currentUser.username}/>
+                <ListItemSecondaryAction onClick={handleLogout} className={classes.secondaryAction}>
+                    <IconButton aria-label="delete">
+                        <ExitToAppIcon
+                            color="primary"
+                            fontSize="large"
+                        />
+                    </IconButton>
+                </ListItemSecondaryAction>
+                <ListItemSecondaryAction onClick={handleOpen} >
                     <IconButton edge="end" aria-label="delete">
                         <AddCircleOutlineIcon
                             color="primary"
@@ -177,6 +166,29 @@ export default function ChannelList(props) {
                         />
                     </IconButton>
                 </ListItemSecondaryAction>
+                <Dialog open={open} onClose={handleClose} aria-labelledby="form-dialog-title">
+                    <form onSubmit={handleCreate}>
+                        <DialogTitle id="form-dialog-title">New Channel Title</DialogTitle>
+                        <DialogContent>
+                            <TextField
+                                onChange={handleInput}
+                                autoFocus
+                                margin="dense"
+                                id="name"
+                                label="Name"
+                                fullWidth
+                            />
+                        </DialogContent>
+                        <DialogActions>
+                            <Button onClick={handleClose} color="primary">
+                                Cancel
+                            </Button>
+                            <Button type="submit" onClick={handleClose} color="primary">
+                                Create
+                            </Button>
+                        </DialogActions>
+                    </form>
+                </Dialog>
             </ListItem>
             {channelList.map((channelData) => (
                 <ChannelItem
