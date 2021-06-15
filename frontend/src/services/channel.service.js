@@ -1,9 +1,9 @@
 import socket from './SocketClient';
 import { useEffect, useState } from 'react';
 import AuthService from './auth.service';
-const currentUser = AuthService.getCurrentUser();
 
 const useChannel = () => {
+    const currentUser = AuthService.getCurrentUser();
     const [channelList, setChannelList] = useState([]);
     useEffect(() => {
         socket.on('receive_channel', (response) => {

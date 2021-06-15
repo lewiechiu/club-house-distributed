@@ -11,11 +11,11 @@ import IconButton from '@material-ui/core/IconButton';
 import Avatar from '@material-ui/core/Avatar';
 import Identicon from 'react-identicons';
 import blueGrey from '@material-ui/core/colors/blueGrey';
+import Button from '@material-ui/core/Button';
 
 import AuthService from '../services/auth.service';
 import useChannel from '../services/channel.service';
 // Fake data
-const currentUser = AuthService.getCurrentUser();
 // const channelListData = [
 //     {
 //         channel_id: Math.random().toString(),
@@ -63,9 +63,16 @@ const useStyles = makeStyles((theme) => ({
         backgroundColor: blueGrey[400],
         color: '#fff',
     },
+    logoutBtn: {
+        marginTop: theme.spacing(2),
+        marginBottom: theme.spacing(2),
+        marginLeft: theme.spacing(2),
+        justify: 'flex-end',
+    },
 }));
 
 export default function ChannelList(props) {
+    const currentUser = AuthService.getCurrentUser();
     const classes = useStyles();
     // const [channelList, setChannelList] = useState(channelListData);
     const {
@@ -115,6 +122,10 @@ export default function ChannelList(props) {
         }
     };
 
+    const handleLogout = () => {
+        AuthService.logout();
+    };
+
     //Get channel list in first render
     useEffect(() => {
         console.log('Get channel list in first render!');
@@ -149,6 +160,15 @@ export default function ChannelList(props) {
                     </Avatar>
                 </ListItemAvatar>
                 <ListItemText primary={currentUser.username} />
+                <Button
+                    size="small"
+                    variant="contained"
+                    color="secondary"
+                    className={classes.logoutBtn}
+                    onClick={handleLogout}
+                >
+                    LOG OUT
+                </Button>
                 <ListItemSecondaryAction onClick={handleCreate}>
                     <IconButton edge="end" aria-label="delete">
                         <AddCircleOutlineIcon

@@ -1,9 +1,9 @@
 import socket from './SocketClient';
 import { useEffect, useState } from 'react';
 import AuthService from './auth.service';
-const currentUser = AuthService.getCurrentUser();
 
 const useChat = () => {
+    const currentUser = AuthService.getCurrentUser();
     const [messageList, setMessageList] = useState([]);
     const [prevChannelId, setPrevChannelId] = useState('');
     useEffect(() => {

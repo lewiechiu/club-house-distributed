@@ -27,14 +27,22 @@ const login = async (username, password) => {
 
 const logout = () => {
     localStorage.removeItem('user');
+    window.location.href = '/';
 };
 
 const getCurrentUser = () => {
-    return JSON.parse(localStorage.getItem('user'));
+    if (JSON.parse(localStorage.getItem('user')))
+        return JSON.parse(localStorage.getItem('user'));
+    window.location.href = '/';
+};
+
+const isLoggedIn = () => {
+    return JSON.parse(localStorage.getItem('user')) ? true : false;
 };
 
 export default {
     login,
     logout,
     getCurrentUser,
+    isLoggedIn,
 };

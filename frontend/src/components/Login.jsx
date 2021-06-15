@@ -72,7 +72,7 @@ export default function SignIn(props) {
                 (res) => {
                     if (res?.message === 'success') {
                         console.log('Log in success.');
-                        props.history.push('/chat');
+                        props.history.push('/Chat');
                         window.location.reload();
                     } else {
                         const errorMsg = res?.errorMsg;
