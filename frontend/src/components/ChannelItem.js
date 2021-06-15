@@ -48,7 +48,7 @@ export default function ChannelList(props) {
                             variant="subtitle1"
                             className={classes.content}
                         >
-                            {data.channel_name}({data.people_count})
+                            {data.channel_name}
                         </Typography>
                         <Typography
                             variant="subtitle2"
