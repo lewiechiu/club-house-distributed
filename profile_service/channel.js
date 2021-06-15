@@ -53,21 +53,25 @@ function create_channel(socket, channel_name, username, avatar_url) {
         (data) => {
             // process data.
             var response_map = {
+                "action" : "create",
                 "message": "Success",
                 "channel_id": channel_id,
             };
             var created_channel = {
                 "channel_id": channel_id,
                 "channel_name": channel_name,
-                "people_count": 1,
-                "people": [{ "username": username, "avatar_url": avatar_url }]
+                "user_count": 1,
+                "users": [{ "username": username, "avatar_url": avatar_url }]
             };
             socket.emit('channel_response', response_map);
             return created_channel;
         },
         (error) => {
             console.log(error);
-            socket.emit('channel_response', { "message": error })
+            socket.emit('channel_response', { 
+                "action" : "create",
+                "message": error 
+            })
         }
     );
 }
@@ -102,6 +106,7 @@ function enter_channel(socket, channel_id, username, avatar_url) {
             var user_count = parseInt(data.Attributes.people_count.N);
             
             var response_map = {
+                "action": "enter",
                 "user_count": user_count,
                 "message": "Success"
             }
@@ -109,14 +114,17 @@ function enter_channel(socket, channel_id, username, avatar_url) {
             var entered_channel = {
                 'channel_id': data.Attributes.channel_id.S,
                 'channel_name': data.Attributes.channel_name.S,
-                'people': people,
-                'people_count': parseInt(data.Attributes.people_count.N)
+                'users': people,
+                'user_count': parseInt(data.Attributes.people_count.N)
             };
             socket.emit('channel_response', response_map);
 			return entered_channel;
         },
         (error) => {
-            socket.emit('channel_response', { "message": error });
+            socket.emit('channel_response', { 
+                "action": "enter", 
+                "message": error
+            });
         }
     );
 }
@@ -156,20 +164,20 @@ function leave_channel(socket, channel_id, username) {
             var user_count = parseInt(data.Attributes.people_count.N);
             if (user_count === 0) delete_channel(channel_id);
 
-            socket.emit('channel_response', { "message": "Success" });
+            socket.emit('channel_response', { "action": "leave", "message": "Success" });
 			
 			var people = _unpack_people_map(data.Attributes.people.M);
             var left_channel = {
                 'channel_id': data.Attributes.channel_id.S,
                 'channel_name': data.Attributes.channel_name.S,
-                'people': people,
-                'people_count': parseInt(data.Attributes.people_count.N)
+                'users': people,
+                'user_count': parseInt(data.Attributes.people_count.N)
             };
             return left_channel;
         },
         (error) => {
             console.log(error);
-            socket.emit('channel_response', { "message": error });
+            socket.emit('channel_response', { "action": "leave","message": error });
         }
     );
 }
@@ -207,14 +215,14 @@ function get_all_channels(socket, channel_id){
                         "users": _unpack_people_map(x.people.M),
                         "channel_name": x.channel_name.S,
                         "channel_id": x.channel_id.S, 
-                        "people_count": x.people_count.N,
+                        "user_count": x.people_count.N,
                     });
             });
-            socket.emit('channel_response', res_data); 
+            socket.emit('channel_response', {"action": "get_all", "data":res_data}); 
         },
         (error) => {
             console.log(error);
-            socket.emit('channel_response', {"message": error} ); 
+            socket.emit('channel_response', {"action": "get_all", "data": []} ); 
         }
     );   
 }

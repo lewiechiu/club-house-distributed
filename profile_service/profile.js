@@ -56,6 +56,7 @@ function create_profile(sock, username, password, url, token) {
     client.send(command).then(
         (data) => {
             var response_map = {
+                "message": "success",
                 "username": username,
                 "token": token
             };

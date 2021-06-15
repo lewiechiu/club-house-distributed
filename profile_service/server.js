@@ -77,7 +77,10 @@ io.on('connection', (socket) => {
       })
       .catch((error) => {
         console.log(error);
-        socket.emit('channel_response', { 'message': 'token invalid' });
+        socket.emit('channel_response', { 
+          'action': action,
+          'message': 'token invalid' 
+        });
       });
 
   });
@@ -105,7 +108,10 @@ io.on('connection', (socket) => {
         }
       })
       .catch((error) => {
-        socket.emit('message_response', { 'message': 'token invalid' })
+        socket.emit('message_response', { 
+          'action': action,
+          'message': 'token invalid' 
+        })
       });
 
 
