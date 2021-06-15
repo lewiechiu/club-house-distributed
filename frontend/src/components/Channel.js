@@ -54,13 +54,21 @@ function Channel(props) {
         setInputRef(inputRef);
     };
 
+    const timeFormatter = (datetime) => {
+        let datestr = datetime.toLocaleString();
+        let time =
+            datestr.split(',')[0].slice(0, -5) +
+            ' ' +
+            datestr.split(',')[1].slice(0, -6) +
+            ' ' +
+            datestr.split(',')[1].slice(-2);
+        return time;
+    };
+
     const preprocess = (msgs) => {
         return msgs.map((msg) => {
             return {
-                title:
-                    msg.username === currentUser.username
-                        ? currentUser.username
-                        : 'Others',
+                title: msg.username,
                 position:
                     msg.username === currentUser.username ? 'right' : 'left',
                 type: msg.type,
@@ -68,9 +76,7 @@ function Channel(props) {
                 data: { uri: msg.data },
                 date: new Date(msg.datetime),
                 avatar: msg.sender_avatar,
-                dateString: new Date(msg.datetime)
-                    .toLocaleString()
-                    .split(',')[1],
+                dateString: timeFormatter(new Date(msg.datetime)),
             };
         });
     };
