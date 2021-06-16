@@ -67,6 +67,8 @@ const useChannel = () => {
                 case 'create':
                     console.log(`Sombody create channel ${data.channel_name}.`);
                     break;
+                default:
+                    break;
             }
             console.log('res', response);
         });
@@ -151,11 +153,7 @@ const useChannel = () => {
                 `[Leave_send]User ${currentUser.username} leave channel ${channel_id}!`
             );
             socket.on('channel_response', (response) => {
-                console.log(response);
-                if (
-                    response.constructor === Object &&
-                    Object.keys(response).length === 1
-                ) {
+                if (response.constructor === Object) {
                     const { action, message } = response;
                     if ((action === 'leave') & (message === 'Success')) {
                         console.log(
