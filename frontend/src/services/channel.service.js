@@ -57,20 +57,23 @@ const useChannel = () => {
     useEffect(() => {
         socket.on('receive_channel', (response) => {
             const { action, data } = response;
-            switch (action) {
-                case 'enter':
-                    console.log(`Sombody enter channel ${data.channel_name}.`);
-                    break;
-                case 'leave':
-                    console.log(`Sombody leave channel ${data.channel_name}.`);
-                    break;
-                case 'create':
-                    console.log(`Sombody create channel ${data.channel_name}.`);
-                    break;
-                default:
-                    break;
+            if (data){
+                switch (action) {
+                    case 'enter':
+                        console.log(`Sombody enter channel ${data.channel_name}.`);
+                        break;
+                    case 'leave':
+                        console.log(`Sombody leave channel ${data.channel_name}.`);
+                        break;
+                    case 'create':
+                        console.log(`Sombody create channel ${data.channel_name}.`);
+                        break;
+                    default:
+                        break;
+                }
+                reloadList(data);
             }
-            reloadList(data);
+            socket.off('receive_channel')
         });
     });
 
@@ -154,6 +157,7 @@ const useChannel = () => {
                     console.log(
                         `[Leave_res]User ${currentUser.username} leave channel ${channel_id}!`
                     );
+                    socket.off('channel_response');
                     // update channelList state(user_cnt-1)
                     // let idx = channelList.findIndex(
                     //     (x) => x.channel_id === channel_id
