@@ -2,32 +2,32 @@ import socket from './SocketClient';
 import { useEffect, useState } from 'react';
 import AuthService from './auth.service';
 const channelListData = [
-    {
-        channel_id: Math.random().toString(),
-        people_count: 100,
-        channel_name: 'Singing channel',
-        users: [
-            { username: 'John', avatar_url: 'logo192.png' },
-            { username: 'Mary', avatar_url: '' },
-            { username: 'Coco', avatar_url: 'logo192.png' },
-            { username: 'Kan', avatar_url: '' },
-            { username: 'Kelly', avatar_url: '' },
-            { username: 'Kan', avatar_url: '' },
-            { username: 'Kelly', avatar_url: '' },
-        ],
-    },
-    {
-        channel_id: Math.random().toString(),
-        people_count: 50,
-        channel_name: 'NTU channel',
-        users: [
-            { username: 'John', avatar_url: '' },
-            { username: 'Mary', avatar_url: '' },
-            { username: 'Coco', avatar_url: 'logo192.png' },
-            { username: 'Kan', avatar_url: 'logo192.png' },
-            { username: 'Kelly', avatar_url: '' },
-        ],
-    },
+    // {
+    //     channel_id: Math.random().toString(),
+    //     people_count: 100,
+    //     channel_name: 'Singing channel',
+    //     users: [
+    //         { username: 'John', avatar_url: 'logo192.png' },
+    //         { username: 'Mary', avatar_url: '' },
+    //         { username: 'Coco', avatar_url: 'logo192.png' },
+    //         { username: 'Kan', avatar_url: '' },
+    //         { username: 'Kelly', avatar_url: '' },
+    //         { username: 'Kan', avatar_url: '' },
+    //         { username: 'Kelly', avatar_url: '' },
+    //     ],
+    // },
+    // {
+    //     channel_id: Math.random().toString(),
+    //     people_count: 50,
+    //     channel_name: 'NTU channel',
+    //     users: [
+    //         { username: 'John', avatar_url: '' },
+    //         { username: 'Mary', avatar_url: '' },
+    //         { username: 'Coco', avatar_url: 'logo192.png' },
+    //         { username: 'Kan', avatar_url: 'logo192.png' },
+    //         { username: 'Kelly', avatar_url: '' },
+    //     ],
+    // },
 ];
 
 
@@ -58,6 +58,7 @@ const useChannel = () => {
             switch(action) {
                 case 'enter': 
                     console.log(`Sombody enter channel ${data.channel_name}.`);
+                    // reloadList(data);
                     break;
                 case 'leave': 
                     console.log(`Sombody leave channel ${data.channel_name}.`);
@@ -66,7 +67,6 @@ const useChannel = () => {
                     console.log(`Sombody create channel ${data.channel_name}.`);
                     break;
             }
-            // reloadList(data);
             console.log("res", response);
         });
     });
