@@ -23,7 +23,6 @@ import blueGrey from '@material-ui/core/colors/blueGrey';
 import AuthService from '../services/auth.service';
 import useChannel from '../services/channel.service';
 
-
 // css
 const useStyles = makeStyles((theme) => ({
     list: {
@@ -49,14 +48,14 @@ const useStyles = makeStyles((theme) => ({
         justify: 'flex-end',
     },
     secondaryAction: {
-        paddingRight: 30
+        paddingRight: 30,
     },
 }));
 
 export default function ChannelList(props) {
     const classes = useStyles();
     const [open, setOpen] = useState(false);
-    const [newChannelTitle, setNewChannelTitle] = useState("")
+    const [newChannelTitle, setNewChannelTitle] = useState('');
     const currentUser = AuthService.getCurrentUser();
 
     const {
@@ -77,16 +76,15 @@ export default function ChannelList(props) {
         setCurChannelCnt,
     } = props;
 
-
     const handleClose = () => {
         setOpen(false);
-    }
+    };
 
     const handleOpen = () => {
         setOpen(true);
-    }
+    };
 
-    const handleInput = evt => {
+    const handleInput = (evt) => {
         const title = evt.target.value;
         setNewChannelTitle(title);
     };
@@ -99,11 +97,11 @@ export default function ChannelList(props) {
     };
 
     //create channel
-    const handleCreate = evt => {
+    const handleCreate = (evt) => {
         evt.preventDefault();
         createChannel(newChannelTitle, (err, data) => {
-            if(err) {
-                console.log("Create Channel Fail!")
+            if (err) {
+                console.log('Create Channel Fail!');
                 return;
             }
             if (curChannelId !== '') {
@@ -112,9 +110,9 @@ export default function ChannelList(props) {
             setCurChannelId(data);
             setCurChannelName(newChannelTitle);
             setCurChannelCnt(1);
-        })
+        });
     };
-    
+
     // Enter channel
     const handleJoin = (cid) => {
         enterChannel(cid, (err, data) => {
@@ -154,16 +152,16 @@ export default function ChannelList(props) {
                         <Identicon string={currentUser.username} size="25" />
                     </Avatar>
                 </ListItemAvatar>
-                <ListItemText primary={currentUser.username}/>
-                <ListItemSecondaryAction onClick={handleLogout} className={classes.secondaryAction}>
+                <ListItemText primary={currentUser.username} />
+                <ListItemSecondaryAction
+                    onClick={handleLogout}
+                    className={classes.secondaryAction}
+                >
                     <IconButton aria-label="delete">
-                        <ExitToAppIcon
-                            color="primary"
-                            fontSize="large"
-                        />
+                        <ExitToAppIcon color="primary" fontSize="large" />
                     </IconButton>
                 </ListItemSecondaryAction>
-                <ListItemSecondaryAction onClick={handleOpen} >
+                <ListItemSecondaryAction onClick={handleOpen}>
                     <IconButton edge="end" aria-label="delete">
                         <AddCircleOutlineIcon
                             color="primary"
@@ -171,9 +169,15 @@ export default function ChannelList(props) {
                         />
                     </IconButton>
                 </ListItemSecondaryAction>
-                <Dialog open={open} onClose={handleClose} aria-labelledby="form-dialog-title">
+                <Dialog
+                    open={open}
+                    onClose={handleClose}
+                    aria-labelledby="form-dialog-title"
+                >
                     <form onSubmit={handleCreate}>
-                        <DialogTitle id="form-dialog-title">New Channel Title</DialogTitle>
+                        <DialogTitle id="form-dialog-title">
+                            New Channel Title
+                        </DialogTitle>
                         <DialogContent>
                             <TextField
                                 onChange={handleInput}
@@ -188,7 +192,11 @@ export default function ChannelList(props) {
                             <Button onClick={handleClose} color="primary">
                                 Cancel
                             </Button>
-                            <Button type="submit" onClick={handleClose} color="primary">
+                            <Button
+                                type="submit"
+                                onClick={handleClose}
+                                color="primary"
+                            >
                                 Create
                             </Button>
                         </DialogActions>
