@@ -1,49 +1,84 @@
-import httpClient from './httpClient';
+import socket from './SocketClient';
+import { useEffect, useState } from 'react';
+import AuthService from './auth.service';
 
-const END_POINT = '/message';
-
-const sendMsg = async (channel_id, type, text, image_url, sender_id, sender_avatar) => {
-    const data = {
-        channel_id: channel_id,
-        type: type,
-        text: text,
-        image_url: image_url,
-        sender_id: sender_id,
-        sender_avatar: sender_avatar,
-        datetime: new Date()
+const useChat = () => {
+    const currentUser = AuthService.getCurrentUser();
+    const [messageList, setMessageList] = useState([]);
+    const [prevChannelId, setPrevChannelId] = useState('');
+    useEffect(() => {
+        socket.on('receive_message', (response) => {
+            const { data } = response;
+            setMessageList([...messageList, data]);
+        });
+    });
+    const sendMsg = async (
+        channel_id,
+        type,
+        text,
+        image_url,
+        sender_avatar,
+        datetime
+    ) => {
+        let data = {
+            username: currentUser.username,
+            token: currentUser.token,
+            action: 'send',
+            channel_id: channel_id,
+            type: type,
+            text: text,
+            image_url: image_url,
+            sender_avatar: sender_avatar,
+            datetime: datetime,
+        };
+        try {
+            socket.emit('message', data);
+            let response = await new Promise((resolve) => {
+                socket.on('message_response', (response) => {
+                    resolve(response);
+                });
+            });
+            setMessageList([...messageList, data]);
+            return response;
+        } catch (err) {
+            console.error(err);
+            return null;
+        }
     };
-    try {
-        const response = await httpClient.post(
-            END_POINT,
-            data,
-            { headers: { 'Content-Type': 'application/json' } },
-        );
-        return response.data;
-    } catch (err) {
-        console.error(err);
-        return null;
-    }
+
+    const getAllMsgs = async (channel_id, message_id) => {
+        let data = {
+            username: currentUser.username,
+            token: currentUser.token,
+            action: 'get_all',
+            channel_id: channel_id,
+            message_id: message_id,
+        };
+        try {
+            let local_msgList = messageList;
+            if (prevChannelId !== channel_id) {
+                setMessageList([]);
+                local_msgList = [];
+            }
+            socket.emit('message', data);
+            let response = await new Promise((resolve) => {
+                socket.on('message_response', (response) => {
+                    resolve(response.data);
+                });
+            });
+            setPrevChannelId(channel_id);
+            setMessageList([...response.reverse(), ...local_msgList]);
+        } catch (err) {
+            console.error(err);
+            return null;
+        }
+    };
+
+    return {
+        messageList,
+        sendMsg,
+        getAllMsgs,
+    };
 };
 
-const getAllMsgs = async (channel_id) => {
-    const data = {
-        channel_id: channel_id,
-    }
-    try {
-        const response = await httpClient.post(
-            '/all_messages',
-            data,
-            { headers: { 'Content-Type': 'application/json' } },
-        );
-        return response.data;
-    } catch (err) {
-        console.error(err);
-        return null;
-    }
-};
-
-
-export default {
-    sendMsg,
-    getAllMsgs,
-};
+export default useChat;

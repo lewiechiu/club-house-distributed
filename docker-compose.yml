@@ -1,37 +1,42 @@
-version: "3"
+version: '3'
 networks:
-  chat:
+    chat:
 
 services:
-  # Launch the Redis used for syncing messages between copies of the client app
-  redis:
-    image: redis:alpine
-    networks:
-      - chat
-    ports:
-      - 6379:6379
+    # Launch the Redis used for syncing messages between copies of the client app
+    redis:
+        image: redis:alpine
+        networks:
+            - chat
+        ports:
+            - 6379:6379
 
-  # The actual client application
-  web1:
-    depends_on:
-      - redis
-    networks:
-      - chat
-    build: ./profile_service/
-    environment:
-      REDIS_ENDPOINT: redis
-      PORT: 8080
-    ports:
-      - 8080:8080
-  web2:
-    depends_on:
-      - redis
-    networks:
-      - chat
-    build: ./profile_service/
-    environment:
-      REDIS_ENDPOINT: redis
-      PORT: 8081
-    ports:
-      - 8081:8081
-  
+    # The actual client application
+    web1:
+        depends_on:
+            - redis
+        networks:
+            - chat
+        build: ./profile_service/
+        environment:
+            REDIS_ENDPOINT: redis
+            PORT: 8080
+        ports:
+            - 8080:8080
+    web2:
+        depends_on:
+            - redis
+        networks:
+            - chat
+        build: ./profile_service/
+        environment:
+            REDIS_ENDPOINT: redis
+            PORT: 8081
+        ports:
+            - 8081:8081
+    frontend:
+        build:
+            context: ./frontend
+            dockerfile: ./Dockerfile
+        ports:
+            - '3000:3000'

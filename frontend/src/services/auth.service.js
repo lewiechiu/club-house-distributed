@@ -1,34 +1,48 @@
-import httpClient from './httpClient';
+import socket from './SocketClient';
 
-const END_POINT = '/login';
-
-const login = (username, password) => {
-  try {
-    const response = await httpClient.post(END_POINT, { username, password });
-    if (response.data.access_token) {
-      localStorage.setItem('user', JSON.stringify({
-        userName: username,  // TO ADD
-        accessToken: response.data.access_token
-      }));  
-      localStorage.setItem('accessToken', response.data.access_token);
+const login = async (username, password) => {
+    try {
+        return new Promise((resolve) => {
+            socket.emit('login', { username, password });
+            socket.on('login_response', (response) => {
+                if (response?.message === 'success') {
+                    localStorage.setItem(
+                        'user',
+                        JSON.stringify({
+                            username: username,
+                            token: response.token,
+                            avatar_url: response?.avatar_url || '',
+                        })
+                    );
+                    resolve(response);
+                } else {
+                    resolve({ errorMsg: response?.message });
+                }
+            });
+        });
+    } catch (err) {
+        console.log('Unexpected Error', err);
     }
-    return response.data;
-  } catch (err) {
-    console.log(err);
-    return null;
-  }
 };
 
 const logout = () => {
-  localStorage.removeItem("user");
+    localStorage.removeItem('user');
+    window.location.href = '/';
 };
 
 const getCurrentUser = () => {
-  return JSON.parse(localStorage.getItem("user"));
+    if (JSON.parse(localStorage.getItem('user')))
+        return JSON.parse(localStorage.getItem('user'));
+    window.location.href = '/';
+};
+
+const isLoggedIn = () => {
+    return JSON.parse(localStorage.getItem('user')) ? true : false;
 };
 
 export default {
-  login,
-  logout,
-  getCurrentUser,
+    login,
+    logout,
+    getCurrentUser,
+    isLoggedIn,
 };
