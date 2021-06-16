@@ -1,0 +1,23 @@
+config:
+  target: "http://18.116.51.105:8080"
+  socketio:
+    transports: ["websocket"]
+  phases:
+    - duration: 10
+      arrivalRate: 1
+scenarios:
+  - name:  "login, all channel, create, get msg, send msg, leave" 
+    engine: "socketio"
+    flow:
+      - emit:
+          channel: "login"
+          data: "{{$randomString()}}"
+      - think: 1
+      - emit:
+          channel: "channel"
+          data: "{{$randomString()}}"
+      - think: 1
+      - emit:
+          channel: "message"
+          data: "{{$randomString()}}"
+      - think: 1
