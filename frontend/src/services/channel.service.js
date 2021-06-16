@@ -47,7 +47,7 @@ const useChannel = () => {
                 ...channelList.slice(idx + 1),
             ]);
         }
-        console.log("reload list success!!!")
+        console.log("reload list success!!!!")
         //resort
         // let newList = channelList
         // let newSortList = newList.sort((a, b) => (a.people_count > b.people_count ? 1 : -1));
