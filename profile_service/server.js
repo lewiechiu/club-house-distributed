@@ -21,7 +21,7 @@ const app = express();
 app.use(compression());
 const http = require('http').createServer(app);
 const io = require("socket.io")(http);
-io.adapter(redisAdapter({ host: config.REDIS_ENDPOINT, port: 6379 }));
+io.adapter(  redisAdapter({ host: config.REDIS_ENDPOINT, port: 6379 }));
 
 
 io.on('connection', (socket) => {
@@ -66,13 +66,24 @@ io.on('connection', (socket) => {
         //}
       })
       .then((data) => {
-        if (action !== 'get_all'){
-          var response_map = {
-            action: action,
-            data: data
-          };
-          socket.broadcast.emit('receive_channel', response_map)
-          return ;
+        var response_map = {
+          action: action,
+          data: data
+        };
+        if (action === "enter"){
+          var channel_id = params['channel_id'];
+          socket.join(channel_id);
+          socket.to(channel_id).emit('receive_channel', response_map);
+        }
+        else if (action === "leave"){
+          var channel_id = params['channel_id'];
+          socket.leave(channel_id);
+          socket.to(channel_id).emit('receive_channel', response_map);
+        }
+        else if (action === "create"){
+          socket.join(data.channel_id);
+          socket.broadcast.emit('receive_channel', response_map);
+          
         }
       })
       .catch((error) => {
@@ -89,6 +100,7 @@ io.on('connection', (socket) => {
     var action = params['action'];
     var token = params['token'];
     var username = params['username'];
+    var channel_id = params['channel_id'];
     profile.token_auth(username, token)
       .then(() => {
         if (action === 'send') {
@@ -104,7 +116,7 @@ io.on('connection', (socket) => {
             action: action,
             data: message
           };
-          socket.broadcast.emit('receive_message', response_map)
+          socket.to(channel_id).emit('receive_message', response_map)
         }
       })
       .catch((error) => {
