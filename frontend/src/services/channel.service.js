@@ -47,6 +47,7 @@ const useChannel = () => {
                 ...channelList.slice(idx + 1),
             ]);
         }
+        console.log("reload list success!!!")
         //resort
         // let newList = channelList
         // let newSortList = newList.sort((a, b) => (a.people_count > b.people_count ? 1 : -1));
@@ -59,7 +60,6 @@ const useChannel = () => {
             switch (action) {
                 case 'enter':
                     console.log(`Sombody enter channel ${data.channel_name}.`);
-                    // reloadList(data);
                     break;
                 case 'leave':
                     console.log(`Sombody leave channel ${data.channel_name}.`);
@@ -68,7 +68,7 @@ const useChannel = () => {
                     console.log(`Sombody create channel ${data.channel_name}.`);
                     break;
             }
-            console.log('res', response);
+            reloadList(data);
         });
     });
 
@@ -108,27 +108,22 @@ const useChannel = () => {
             socket.emit('channel', data);
             // console.log(`[Create_send]User ${currentUser.username} create channel channel_name(${channel_id})!`)
             socket.on('channel_response', (response) => {
-                if (
-                    response.constructor === Object &&
-                    'channel_id' in response
-                ) {
-                    const { action, message, channel_id } = response;
-                    // console.log(`[Create_res]User ${currentUser.username} create channel channel_name(${channel_id})!`)
-                    if ((action === 'create') & (message === 'Success')) {
-                        const newChannelData = {
-                            channel_id: channel_id,
-                            channel_name: channel_name,
-                            people_count: 1,
-                            users: [
-                                {
-                                    username: currentUser.username,
-                                    avatar_url: '',
-                                },
-                            ],
-                        };
-                        setChannelList([...channelList, newChannelData]);
-                        return cb(null, channel_id);
-                    }
+                const { action, message, channel_id } = response;
+                // console.log(`[Create_res]User ${currentUser.username} create channel channel_name(${channel_id})!`)
+                if ((action === 'create') & (message === 'Success')) {
+                    const newChannelData = {
+                        channel_id: channel_id,
+                        channel_name: channel_name,
+                        people_count: 1,
+                        users: [
+                            {
+                                username: currentUser.username,
+                                avatar_url: '',
+                            },
+                        ],
+                    };
+                    setChannelList([...channelList, newChannelData]);
+                    return cb(null, channel_id);
                 }
             });
         } catch (err) {
@@ -147,42 +142,37 @@ const useChannel = () => {
 
         try {
             socket.emit('channel', data);
-            console.log(
-                `[Leave_send]User ${currentUser.username} leave channel ${channel_id}!`
-            );
+            // console.log(
+            //     `[Leave_send]User ${currentUser.username} leave channel ${channel_id}!`
+            // );
             socket.on('channel_response', (response) => {
-                console.log(response);
-                if (
-                    response.constructor === Object &&
-                    Object.keys(response).length === 1
-                ) {
-                    const { action, message } = response;
-                    if ((action === 'leave') & (message === 'Success')) {
-                        console.log(
-                            `[Leave_res]User ${currentUser.username} leave channel ${channel_id}!`
-                        );
-                        // update channelList state(user_cnt-1)
-                        let idx = channelList.findIndex(
-                            (x) => x.channel_id === channel_id
-                        );
-                        if (idx !== -1) {
-                            let updateChannelData = channelList[idx];
-                            updateChannelData.people_count =
-                                parseInt(updateChannelData.people_count) - 1;
-                            if (updateChannelData.people_count === 0) {
-                                setChannelList([
-                                    ...channelList.slice(0, idx),
-                                    ...channelList.slice(idx + 1),
-                                ]);
-                            } else {
-                                setChannelList([
-                                    ...channelList.slice(0, idx),
-                                    updateChannelData,
-                                    ...channelList.slice(idx + 1),
-                                ]);
-                            }
-                        }
-                    }
+                // console.log(response);
+                const { action, message } = response;
+                if ((action === 'leave') & (message === 'Success')) {
+                    // console.log(
+                    //     `[Leave_res]User ${currentUser.username} leave channel ${channel_id}!`
+                    // );
+                    // update channelList state(user_cnt-1)
+                    // let idx = channelList.findIndex(
+                    //     (x) => x.channel_id === channel_id
+                    // );
+                    // if (idx !== -1) {
+                    //     let updateChannelData = channelList[idx];
+                    //     updateChannelData.people_count =
+                    //         parseInt(updateChannelData.people_count) - 1;
+                    //     if (updateChannelData.people_count === 0) {
+                    //         setChannelList([
+                    //             ...channelList.slice(0, idx),
+                    //             ...channelList.slice(idx + 1),
+                    //         ]);
+                    //     } else {
+                    //         setChannelList([
+                    //             ...channelList.slice(0, idx),
+                    //             updateChannelData,
+                    //             ...channelList.slice(idx + 1),
+                    //         ]);
+                    //     }
+                    // }
                 }
             });
         } catch (err) {
@@ -190,7 +180,7 @@ const useChannel = () => {
         }
     };
 
-    const enterChannel = (channel_id) => {
+    const enterChannel = (channel_id, cb) => {
         let data = {
             username: currentUser.username,
             token: currentUser.token,
@@ -201,36 +191,33 @@ const useChannel = () => {
 
         try {
             socket.emit('channel', data);
-            console.log(
-                `[Enter_send]User ${currentUser.username} enter channel ${channel_id}!`
-            );
+            // console.log(
+            //     `[Enter_send]User ${currentUser.username} enter channel ${channel_id}!`
+            // );
             socket.on('channel_response', (response) => {
-                if (
-                    response.constructor === Object &&
-                    'user_count' in response
-                ) {
-                    const { action, user_count, message } = response;
-                    if ((action === 'enter') & (message === 'Success')) {
-                        console.log(
-                            `[Enter_res]User ${currentUser.username} enter channel ${channel_id}!`
-                        );
-                        // update channelList state(user_cnt+1)
-                        let idx = channelList.findIndex(
-                            (x) => x.channel_id === channel_id
-                        );
-                        let updateChannelData = channelList[idx];
-                        updateChannelData.people_count =
-                            parseInt(updateChannelData.people_count) + 1;
-                        setChannelList([
-                            ...channelList.slice(0, idx),
-                            updateChannelData,
-                            ...channelList.slice(idx + 1),
-                        ]);
-                    }
+                const { action, user_count, message } = response;
+                if ((action === 'enter') & (message === 'Success')) {
+                    // console.log(
+                    //     `[Enter_res]User ${currentUser.username} enter channel ${channel_id}!`
+                    // );
+                    return cb(null, user_count)
+                    // //update and resort channel list
+                    // let idx = channelList.findIndex(
+                    //     (x) => x.channel_id === channel_id
+                    // );
+                    // let updateChannelData = channelList[idx];
+                    // updateChannelData.people_count =
+                    //     parseInt(updateChannelData.people_count) + 1;
+                    // setChannelList([
+                    //     ...channelList.slice(0, idx),
+                    //     updateChannelData,
+                    //     ...channelList.slice(idx + 1),
+                    // ]);
                 }
             });
         } catch (err) {
             console.error(err);
+            return cb(err, null)
         }
     };
 

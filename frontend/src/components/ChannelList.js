@@ -117,16 +117,21 @@ export default function ChannelList(props) {
     
     // Enter channel
     const handleJoin = (cid) => {
-        enterChannel(cid);
-        if (curChannelId !== '') {
-            leaveChannel(curChannelId);
-        }
-        setCurChannelId(cid);
-        const curChannelData = channelList.find(
-            (cdata) => cdata.channel_id === cid
-        );
-        setCurChannelName(curChannelData.channel_name);
-        setCurChannelCnt(parseInt(curChannelData.people_count)+1);
+        enterChannel(cid, (err, data) => {
+            if(err) {
+                console.log("Enter Channel Fail!")
+                return;
+            }
+            if (curChannelId !== '') {
+                leaveChannel(curChannelId);
+            }
+            setCurChannelId(cid);
+            const curChannelData = channelList.find(
+                (cdata) => cdata.channel_id === cid
+            );
+            setCurChannelName(curChannelData.channel_name);
+            setCurChannelCnt(parseInt(data));
+        });
     };
 
     //Get channel list in first render
