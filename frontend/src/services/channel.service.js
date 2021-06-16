@@ -67,6 +67,8 @@ const useChannel = () => {
                 case 'create':
                     console.log(`Sombody create channel ${data.channel_name}.`);
                     break;
+                default:
+                    break;
             }
             reloadList(data);
         });
@@ -149,9 +151,9 @@ const useChannel = () => {
                 // console.log(response);
                 const { action, message } = response;
                 if ((action === 'leave') & (message === 'Success')) {
-                    // console.log(
-                    //     `[Leave_res]User ${currentUser.username} leave channel ${channel_id}!`
-                    // );
+                    console.log(
+                        `[Leave_res]User ${currentUser.username} leave channel ${channel_id}!`
+                    );
                     // update channelList state(user_cnt-1)
                     // let idx = channelList.findIndex(
                     //     (x) => x.channel_id === channel_id
