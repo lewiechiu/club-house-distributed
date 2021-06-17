@@ -20,16 +20,17 @@ class QuickstartUser(HttpUser):
         self.sio = socketio.Client()
         self.sio.connect("http://18.116.51.105:8080", transports='websocket')
         
-        self.username, self.token, self.channel_id = "", "", ""
+        self.username, self.token, self.channel_id = "", "", "" 
         self.login()
         
-        '''@self.sio.on('login_response')
+        @self.sio.on('login_response')
         def login_response(data):
             data = data.json()
             self.username = data['username']
             self.token = data['token']
-            
-        
+
+            self.all_channels()
+             
         @self.sio.on('channel_response')
         def channel_response(data):
             data = data.json()
@@ -37,37 +38,36 @@ class QuickstartUser(HttpUser):
                 res_list = data["data"]
                 if len(res_list) != 0:
                     idx = randint(0,len(res_list))
-                    self.channel_id = res_list[idx]["channel_id"]  
+                    self.channel_id = res_list[idx]["channel_id"]   # one channel_id is selected
+                    self.into_new_channel()
             elif data["action"] == 'create':
                 self.channel_id = data["channel_id"]
-            
-        '''
+                self.into_new_channel()
         
-    
     @task
     def loadtest(self):  
+        self.all_channels()
+
+
+    def into_new_channel(self):
+               
+        self.get_messages()   
+        #print(self.username, 'enter', self.channel_id)
+
+        while randint(1,10)!=1:
+            self.send_messages() 
         
-        while True:
-            self.channel_id = self.all_channels()  # one channel_id is selected
+        #print(self.username, 'leave', self.channel_id)
+        self.channel_leave()  
+
+        if randint(1,5)==1:
+            break
+        else:
             if randint(1,8)==1:
-                res = self.channel_create()  
-                if res != '':
-                    self.channel_id = res
-                    self.get_messages()   
-                    #print(self.username, 'create', self.channel_id)
+                self.channel_create()      
             else:
-                self.channel_enter()   
-                self.get_messages()   
-                #print(self.username, 'enter', self.channel_id)
-
-            while randint(1,10)!=1:
-                self.send_messages() 
+                self.all_channels() 
             
-            #print(self.username, 'leave', self.channel_id)
-            self.channel_leave()  
-
-            if randint(1,5)==1:
-                break
 
 
     def on_stop(self):
