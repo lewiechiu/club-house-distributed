@@ -1,8 +1,7 @@
-# locust -f locust_loadtest.py -H http://localhost:8888
 from locust import HttpUser, task, between
 from random import randint
 from datetime import datetime
-import socketio  #https://python-socketio.readthedocs.io/en/latest/client.html
+import socketio  
  
 def makename(length):
     result = ''
@@ -18,57 +17,71 @@ class QuickstartUser(HttpUser):
     
     def on_start(self):  
         self.sio = socketio.Client()
-        self.sio.connect("http://18.116.51.105:8080", transports='websocket')
+        self.sio.connect("http://localhost:8080", transports='websocket')
         
-        self.username, self.token, self.channel_id = "", "", "" 
+        self.token, self.channel_id = "", ""
+
+        self.username = makename(randint(5,14))
         self.login()
         
         @self.sio.on('login_response')
         def login_response(data):
-            data = data.json()
-            self.username = data['username']
+            print(self.username, 'login')
             self.token = data['token']
-
             self.all_channels()
              
         @self.sio.on('channel_response')
         def channel_response(data):
-            data = data.json()
-            if data["action"] == 'get_all':
-                res_list = data["data"]
-                if len(res_list) != 0:
-                    idx = randint(0,len(res_list))
-                    self.channel_id = res_list[idx]["channel_id"]   # one channel_id is selected
+            try:
+                if data["action"] == 'get_all':
+                    print(self.username, 'get all channels')
+                    res_list = data["data"]
+                    if len(res_list) != 0:
+                        idx = randint(0,len(res_list))
+                        self.channel_id = res_list[idx]["channel_id"]   
+                        self.channel_enter()          
+                elif data["action"] == 'create':
+                    print(self.username, 'create', self.channel_id)
+                    self.channel_id = data["channel_id"]
                     self.into_new_channel()
-            elif data["action"] == 'create':
-                self.channel_id = data["channel_id"]
-                self.into_new_channel()
-        
+
+                elif data["action"] == 'enter':
+                    print(self.username, 'enter', self.channel_id)
+                    self.into_new_channel() 
+                elif data["action"] == 'leave':
+                    print(self.username, 'leave', self.channel_id)
+            except:
+                None
+
+        @self.sio.on('message_response')
+        def message_response(data):
+                if data["action"] == 'send':
+                    print(self.username, 'send message to ', self.channel_id)
+                elif data["action"] == 'get_all':
+                    print(self.username, 'get messages from', self.channel_id)
+            
     @task
     def loadtest(self):  
         self.all_channels()
 
-
     def into_new_channel(self):
                
-        self.get_messages()   
-        #print(self.username, 'enter', self.channel_id)
+        while True:  
+            self.get_messages()   
 
-        while randint(1,10)!=1:
-            self.send_messages() 
-        
-        #print(self.username, 'leave', self.channel_id)
-        self.channel_leave()  
+            while randint(1,10)!=1:
+                self.send_messages() 
+             
+            self.channel_leave()  
 
-        if randint(1,5)==1:
-            break
-        else:
-            if randint(1,8)==1:
-                self.channel_create()      
+            if randint(1,5)==1:
+                break
             else:
-                self.all_channels() 
-            
-
+                if randint(1,8)==1:
+                    self.channel_create()      
+                else:
+                    self.all_channels() 
+                
 
     def on_stop(self):
         self.sio.disconnect()
@@ -78,9 +91,12 @@ class QuickstartUser(HttpUser):
 
     def login(self):
         # create a user
-        username =  makename(randint(5,14))
         password =  makename(randint(8,16))
-        self.sio.emit('login', { "username":username, "password":password} )
+        data = {
+            "username": self.username,
+            "password": password
+        }
+        self.sio.emit('login', data )
         
     
     def all_channels(self):
