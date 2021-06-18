@@ -10,6 +10,13 @@
 
 You need to setup aws-sdk, and add aws credentials in `profile_service` before you run.
 
+```
+# example profile_service
+[default]
+aws_access_key_id = <aws_access_key_id>
+aws_secret_access_key = <aws_secret_access_key>
+```
+
 ## Packages
 
 ```
@@ -55,6 +62,13 @@ backend
 `http://0.0.0.0:8080` and `http://0.0.0.0:8081`
 
 redis `localhost:6379`
+
+### Testing
+
+```bash
+cd profile_service
+locust locust_loadtest.py
+```
 
 ## Project Structure
 
@@ -122,4 +136,9 @@ redis `localhost:6379`
 |____stress
 | |____locust_loadtest.py
 | |____locust.py
+
+# aws ECS Task Definition
+|____aws
+| |____ecs_be_task_def.json
+| |____ecs_fe_task_def.json
 ```
